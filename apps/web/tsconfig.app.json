@@ -1,0 +1,28 @@
+{
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
+		"tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+		"useDefineForClassFields": true,
+		"lib": [
+			"ES2023",
+			"DOM",
+			"DOM.Iterable"
+		],
+		"noEmit": true,
+		"jsx": "react-jsx",
+		"paths": {
+			"@/*": [
+				"./src/*"
+			],
+			"@/lib/*": [
+				"./src/lib/*"
+			],
+			"@/components/*": [
+				"./src/components/*"
+			]
+		}
+	},
+	"include": [
+		"src"
+	]
+}

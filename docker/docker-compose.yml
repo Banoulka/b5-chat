@@ -1,0 +1,29 @@
+services:
+    db:
+        image: postgres:16-alpine
+        restart: unless-stopped
+        environment:
+            POSTGRES_USER: b5chat
+            POSTGRES_PASSWORD: my-secret-token
+            POSTGRES_DB: b5chat
+        volumes:
+            - db_data:/var/lib/postgresql/data
+        ports:
+            - '5432:5432'
+
+    api:
+        build: ../apps/api
+        depends_on: [db]
+        environment:
+            DATABASE_URL: postgres://b5chat:my-secret-token@db:5432/b5chat
+        ports:
+            - '3001:3001'
+
+    web:
+        build: ../apps/web
+        depends_on: [api]
+        ports:
+            - '3000:80'
+
+volumes:
+    db_data:

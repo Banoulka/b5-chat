@@ -2,17 +2,16 @@
 
 ## MVP
 
-- [ ] Chats and converations 
+- [ ] Chats and converations
 - [ ] Multiple models & providers to choose from
-- [ ] Auth users 
+- [ ] Auth users
 - [ ] Easy to setup and try
-
 
 ## Bonus features
 
 - [ ] Attachment support (plus model guards)
 - [ ] Image-generation support (plus models)
-- [ ] Syntax code highlighting 
+- [ ] Syntax code highlighting
 - [ ] Resumable streams (continue gen after page refresh)
 - [ ] Chat branching (alternative conversation paths plus ui)
 - [ ] Chat sharing (share chat with link + anonymous)
@@ -21,6 +20,7 @@
 - [ ] ~~Mobile app~~
 
 ## Bonus bonus features (do you like jazz?)
+
 - [ ] Teams + team workspaces?
 - [ ] Chat history export/import
 - [ ] API access for devs

@@ -1,0 +1,31 @@
+{
+	"folders": [
+		{
+			"path": "..",
+			"name": "Root",
+		},
+		{
+			"path": "../apps/api",
+			"name": "Api",
+		},
+		{
+			"path": "../apps/web",
+			"name": "Web",
+		},
+		{
+			"path": "../packages/common",
+			"name": "Common",
+		},
+		{
+			"path": "../packages/config",
+			"name": "Config",
+		},
+	],
+	"settings": {
+		"workbench.colorCustomizations": {
+			"activityBar.background": "#01333E",
+			"titleBar.activeBackground": "#014757",
+			"titleBar.activeForeground": "#EFFCFF",
+		},
+	},
+}

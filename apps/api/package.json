@@ -1,0 +1,22 @@
+{
+	"name": "@b5-chat/api",
+	"module": "index.ts",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"dev": "bun run --hot src/index.ts ",
+		"build": "bun build src/index.ts --outfile dist/index.js",
+		"start": "bun run dist/index.js"
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"@b5-chat/config": "workspace:*"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"@t3-oss/env-core": "^0.13.6",
+		"zod": "^3.25.56"
+	}
+}
