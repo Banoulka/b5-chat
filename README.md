@@ -26,3 +26,10 @@
 - [ ] API access for devs
 - [ ] Custom prompt templates library
 - [ ] Dark/light theme toggle
+
+
+### Useful commands
+
+- Docker compose up
+
+`$ docker compose -f docker/docker-compose.yml up --build -d`

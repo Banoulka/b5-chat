@@ -1,3 +1,5 @@
+version: '3.9'
+
 services:
     db:
         image: postgres:16-alpine
@@ -8,22 +10,36 @@ services:
             POSTGRES_DB: b5chat
         volumes:
             - db_data:/var/lib/postgresql/data
-        ports:
-            - '5432:5432'
+        ports: ['4000:5432']
 
-    api:
-        build: ../apps/api
-        depends_on: [db]
-        environment:
-            DATABASE_URL: postgres://b5chat:my-secret-token@db:5432/b5chat
-        ports:
-            - '3001:3001'
+    # api:
+    #     build:
+    #         context: ..
+    #         dockerfile: apps/api/Dockerfile
+    #         target: dev
+    #     depends_on: [db]
+    #     environment:
+    #         DATABASE_URL: postgres://b5chat:my-secret-token@db:4000/b5chat
+    #         PORT: 3001
+    #     volumes:
+    #         - ..:/src
+    #         - bun-api-cache:/root/.bun
+    #     ports: ['3001:3001']
 
-    web:
-        build: ../apps/web
-        depends_on: [api]
-        ports:
-            - '3000:80'
+    # web:
+    #     build:
+    #         context: ..
+    #         dockerfile: apps/web/Dockerfile
+    #         target: dev
+    #     depends_on: [api]
+    #     environment:
+    #         VITE_API_URL: http://api:3001
+    #     volumes:
+    #         - ..:/src
+    #         - bun-web-cache:/root/.bun
+    #     ports: ['5173:5173']
 
 volumes:
     db_data:
+    bun-api-cache:
+    bun-web-cache:

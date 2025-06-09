@@ -1,5 +1,6 @@
 import { env } from './env';
 import { printRoutes, router } from './router';
+import './service/db';
 
 const routes = await router();
 printRoutes(routes);
