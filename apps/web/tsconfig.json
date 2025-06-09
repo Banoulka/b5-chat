@@ -8,5 +8,15 @@
 		{
 			"path": "./tsconfig.node.json"
 		}
-	]
+	],
+
+	"compilerOptions": {
+		"noEmit": true,
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["./src/*"],
+			"@/lib/*": ["./src/lib/*"],
+			"@/components/*": ["./src/components/*"]
+		}
+	}
 }
