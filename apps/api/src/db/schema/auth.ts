@@ -1,10 +1,11 @@
 import type { AdapterAccountType } from '@auth/core/adapters';
-import { boolean, integer, pgTable, primaryKey, text, timestamp } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
+import { boolean, integer, pgTable, primaryKey, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('user', {
-	id: text('id')
+	id: uuid('id')
 		.primaryKey()
-		.$defaultFn(() => crypto.randomUUID()),
+		.default(sql`gen_random_uuid()`),
 	name: text('name'),
 	email: text('email').unique(),
 	emailVerified: timestamp('emailVerified', { mode: 'date' }),
@@ -14,7 +15,7 @@ export const users = pgTable('user', {
 export const accounts = pgTable(
 	'account',
 	{
-		userId: text('userId')
+		userId: uuid('userId')
 			.notNull()
 			.references(() => users.id, { onDelete: 'cascade' }),
 		type: text('type').$type<AdapterAccountType>().notNull(),
@@ -39,7 +40,7 @@ export const accounts = pgTable(
 
 export const sessions = pgTable('session', {
 	sessionToken: text('sessionToken').primaryKey(),
-	userId: text('userId')
+	userId: uuid('userId')
 		.notNull()
 		.references(() => users.id, { onDelete: 'cascade' }),
 	expires: timestamp('expires', { mode: 'date' }).notNull(),
@@ -65,7 +66,7 @@ export const authenticators = pgTable(
 	'authenticator',
 	{
 		credentialID: text('credentialID').notNull().unique(),
-		userId: text('userId')
+		userId: uuid('userId')
 			.notNull()
 			.references(() => users.id, { onDelete: 'cascade' }),
 		providerAccountId: text('providerAccountId').notNull(),
