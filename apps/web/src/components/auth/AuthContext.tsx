@@ -4,8 +4,8 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { env } from '@/env';
 
 const API = env.VITE_API_URL;
-export const api = (path: string, init: RequestInit = {}) =>
-	fetch(`${API}${path}`, { credentials: 'include', ...init }).then((res) => res.json());
+export const api = <T,>(path: string, init: RequestInit = {}) =>
+	fetch(`${API}${path}`, { credentials: 'include', ...init }).then((res) => res.json() as Promise<T>);
 
 interface BaseContext {
 	signIn: () => Promise<void>;
@@ -30,8 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 	const [isLoading, setIsLoading] = useState(true);
 
 	useEffect(() => {
-		api('/auth/session')
-			.then((r) => r.json())
+		api<Session>('/auth/session')
 			.then(setSession)
 			.finally(() => setIsLoading(false));
 	}, []);
