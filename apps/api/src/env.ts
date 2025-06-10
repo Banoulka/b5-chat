@@ -10,6 +10,9 @@ export const env = createEnv({
 		AUTH_SECRET: z.string().min(1),
 		WEB_URL: z.string().min(1),
 		AUTH_URL: z.string().min(1),
+
+		OPENAI_API_KEY: z.string().min(1),
+		TAVILY_API_KEY: z.string().min(1),
 	},
 	runtimeEnv: process.env,
 });

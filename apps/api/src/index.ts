@@ -1,4 +1,5 @@
 import { env } from './env';
+import './llm/agent';
 import { printRoutes, router } from './router';
 import './service/db';
 

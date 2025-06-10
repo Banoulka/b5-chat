@@ -19,9 +19,14 @@
 	"dependencies": {
 		"@auth/core": "^0.39.1",
 		"@auth/drizzle-adapter": "^1.9.1",
+		"@b5-chat/common": "workspace:*",
+		"@langchain/community": "^0.3.45",
+		"@langchain/core": "^0.3.57",
+		"@langchain/langgraph": "^0.3.1",
+		"@langchain/openai": "^0.5.12",
+		"@langchain/tavily": "^0.1.2",
 		"@t3-oss/env-core": "^0.13.6",
 		"drizzle-orm": "^0.44.2",
-		"zod": "^3.25.56",
-		"@b5-chat/common": "workspace:*"
+		"zod": "^3.25.56"
 	}
 }
