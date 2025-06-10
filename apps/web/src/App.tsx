@@ -6,6 +6,7 @@ import { useState } from 'react';
 import reactLogo from './assets/logo.png';
 import { Button } from './components/ui/button';
 import { env } from './env';
+import { Badge } from './components/ui/badge';
 
 const queryClient = new QueryClient();
 
@@ -15,7 +16,7 @@ function App() {
 	return (
 		<>
 			<QueryClientProvider client={queryClient}>
-				<div>
+				<div className="dark">
 					<a href="https://react.dev" target="_blank">
 						<img src={reactLogo} className="logo react" alt="React logo" />
 					</a>
@@ -28,6 +29,11 @@ function App() {
 					<p>
 						Edit <code>src/App.tsx</code> and save to test HMR
 					</p>
+
+					<Badge variant="default">Badge</Badge>
+					<Badge variant="outline">Badge</Badge>
+					<Badge variant="secondary">Badge</Badge>
+					<Badge variant="destructive">Badge</Badge>
 				</div>
 				<p>{env.VITE_API_URL}</p>
 				<p className="read-the-docs">Click on the Vite and React logos to learn more</p>

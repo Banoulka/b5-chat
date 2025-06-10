@@ -27,7 +27,6 @@
 - [ ] Custom prompt templates library
 - [ ] Dark/light theme toggle
 
-
 ### Useful commands
 
 - Docker compose up
