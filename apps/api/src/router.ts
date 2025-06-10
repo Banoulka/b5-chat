@@ -1,8 +1,12 @@
-import { sql } from 'bun';
 import { readdir } from 'node:fs/promises';
 import path from 'node:path';
+import { env } from './env';
 import { ClientResponse } from './lib/ClientResponse';
-import { authHandler } from './service/auth';
+import { applyMiddlewareToRequest, type Middleware } from './middleware';
+import { logging } from './middleware/logging';
+import { authHandler, getSession } from './service/auth';
+
+console.log('Web URL', env.WEB_URL);
 
 const paths = path.join(import.meta.dirname, 'paths');
 
@@ -10,6 +14,7 @@ type Method = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
 type RouteModule = {
 	path: string;
+	middleware?: Middleware[];
 	handler: (req: Bun.BunRequest<string>) => Promise<Response>;
 };
 type ImportedModule = {
@@ -21,6 +26,8 @@ type ImportedModule = {
 };
 
 export type Routes = Record<string, Partial<Record<Method, (req: Bun.BunRequest<string>) => Promise<Response>>>>;
+
+const globalMiddleware: Middleware[] = [logging];
 
 export const router = async () => {
 	// load all files in the paths folder
@@ -35,7 +42,12 @@ export const router = async () => {
 
 			const addHandler = (method: Method, handler: RouteModule) => {
 				if (!routeObj[handler.path]) routeObj[handler.path] = {};
-				routeObj[handler.path]![method] = handler.handler;
+				routeObj[handler.path]![method] = (req) =>
+					applyMiddlewareToRequest(
+						req,
+						[...globalMiddleware, ...(handler.middleware ?? [])],
+						handler.handler,
+					);
 			};
 
 			if (module.GET) addHandler('GET', module.GET);
@@ -47,32 +59,47 @@ export const router = async () => {
 	);
 
 	const authRoutes = {
-		'/auth/:next': authHandler,
+		'/auth/*': (req: Bun.BunRequest<'/auth/*'>) =>
+			applyMiddlewareToRequest(req, [...globalMiddleware], async (req: Bun.BunRequest<'/auth/*'>) => {
+				const response = await authHandler(req);
+				response.headers.set('Access-Control-Allow-Origin', env.WEB_URL);
+				response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH');
+				response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+				response.headers.set('Access-Control-Allow-Credentials', 'true');
+				return response;
+			}),
+	};
+
+	const redirectHomeUrl = {
+		'/': (req: Bun.BunRequest<'/'>) =>
+			applyMiddlewareToRequest(req, [...globalMiddleware], async (req) => {
+				const session = await getSession(req);
+
+				console.log('test session?', session);
+
+				return ClientResponse.redirect(env.WEB_URL);
+			}),
 	};
 
 	const notFoundRoute = {
-		'/**': () => ClientResponse.json({ error: 'Not Found' }, { status: 404 }),
+		'/**': (req: Bun.BunRequest<string>) =>
+			applyMiddlewareToRequest(req, [...globalMiddleware], async () =>
+				ClientResponse.json({ error: 'Not Found' }, { status: 404 }),
+			),
 	};
 
-	const testUserObj = {
-		'/user/:id': {
-			GET: async (req: Bun.BunRequest<'/user/:id'>) => {
-				const [user] = await sql`SELECT * FROM users WHERE id = ${req.params.id}`;
-				return ClientResponse.json(user);
-			},
-		},
-	};
-
-	return { ...routeObj, ...authRoutes, ...notFoundRoute, ...testUserObj } as Routes;
+	return { ...routeObj, ...authRoutes, ...notFoundRoute, ...redirectHomeUrl } as Routes;
 };
 
 export const route = <TPath extends string>(
 	path: TPath,
 	handler: (req: Bun.BunRequest<TPath>) => Promise<Response>,
+	middleware?: Middleware[],
 ) => {
 	return {
 		path,
 		handler,
+		middleware,
 	};
 };
 

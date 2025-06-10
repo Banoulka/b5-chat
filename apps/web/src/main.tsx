@@ -1,12 +1,9 @@
 import './env.ts';
 import './index.css';
 
+import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
-// import { createRoot } from 'react-dom/client';
-// import App from './App.tsx';
-// import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
-import { RouterProvider, createRouter } from '@tanstack/react-router';
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen';
