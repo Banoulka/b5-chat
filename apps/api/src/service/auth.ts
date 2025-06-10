@@ -46,5 +46,5 @@ export async function getSession(req: Request) {
 
 	if (!data || !Object.keys(data).length) return null;
 	if (status === 200) return data;
-	throw new Error(data.message);
+	return null;
 }

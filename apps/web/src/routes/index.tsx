@@ -1,6 +1,7 @@
+import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 
-import { useAuth } from '@/components/auth/AuthContext';
+import { api, useAuth } from '@/components/auth/AuthContext';
 
 export const Route = createFileRoute('/')({
 	component: Index,
@@ -9,10 +10,17 @@ export const Route = createFileRoute('/')({
 function Index() {
 	const { session, isSignedIn } = useAuth();
 
+	const { data } = useQuery({
+		queryFn: () => api('/protected'),
+		queryKey: ['protected'],
+	});
+
 	console.log('session', session);
 
 	return (
 		<div className="p-2">
+			<pre>{JSON.stringify(data, null, 2)}</pre>
+
 			{isSignedIn ? <h3>Welcome Home {session.user.name}!</h3> : <h3>You are not logged in.</h3>}
 
 			{isSignedIn ? <Link to="/logout">Logout</Link> : <Link to="/login">Login</Link>}

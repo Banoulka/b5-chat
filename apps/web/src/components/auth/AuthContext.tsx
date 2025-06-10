@@ -1,12 +1,11 @@
+import type { Session } from '@b5-chat/common';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 import { env } from '@/env';
 
 const API = env.VITE_API_URL;
 export const api = (path: string, init: RequestInit = {}) =>
-	fetch(`${API}${path}`, { credentials: 'include', ...init });
-
-export type Session = { user: { id: string; email: string; name: string; image: string | null } };
+	fetch(`${API}${path}`, { credentials: 'include', ...init }).then((res) => res.json());
 
 interface BaseContext {
 	signIn: () => Promise<void>;

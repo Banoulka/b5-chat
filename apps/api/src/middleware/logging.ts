@@ -12,7 +12,7 @@ const colors = {
 	white: '\x1b[37m',
 };
 
-const getMethodColor = (method: string): string => {
+const getMethodColor = (method: string) => {
 	switch (method.toUpperCase()) {
 		case 'GET':
 			return colors.blue;
@@ -29,7 +29,7 @@ const getMethodColor = (method: string): string => {
 	}
 };
 
-const getStatusColor = (status: number): string => {
+const getStatusColor = (status: number) => {
 	if (status >= 200 && status < 300) return colors.green;
 	if (status >= 300 && status < 400) return colors.cyan;
 	if (status >= 400 && status < 500) return colors.yellow;
@@ -37,14 +37,14 @@ const getStatusColor = (status: number): string => {
 	return colors.white;
 };
 
-const getCurrentTime = (): string => {
+const getCurrentTime = () => {
 	const now = new Date();
-	return now.toTimeString().split(' ')[0] || '00:00:00'; // Gets HH:MM:SS with fallback
+	return now.toTimeString().split(' ')[0] || '00:00:00';
 };
 
 export const logging: Middleware = async (req, next) => {
 	const timeNow = process.hrtime();
-	const response = await next();
+	const response = await next(req);
 	const timeDiff = process.hrtime(timeNow);
 	const timeDiffInMs = timeDiff[0] * 1000 + timeDiff[1] / 1000000;
 

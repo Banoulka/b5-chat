@@ -1,4 +1,7 @@
-export type Middleware = (req: Bun.BunRequest<string>, next: () => Promise<Response>) => Promise<Response>;
+export type Middleware = (
+	req: Bun.BunRequest<string>,
+	next: (req: Bun.BunRequest<string>) => Promise<Response>,
+) => Promise<Response>;
 
 export const applyMiddlewareToRequest = async (
 	req: Bun.BunRequest<string>,

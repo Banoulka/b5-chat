@@ -74,7 +74,6 @@ export const router = async () => {
 		'/': (req: Bun.BunRequest<'/'>) =>
 			applyMiddlewareToRequest(req, [...globalMiddleware], async (req) => {
 				const session = await getSession(req);
-
 				console.log('test session?', session);
 
 				return ClientResponse.redirect(env.WEB_URL);

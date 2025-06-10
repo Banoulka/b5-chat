@@ -36,6 +36,7 @@
 	},
 	"devDependencies": {
 		"@b5-chat/config": "workspace:*",
+		"@b5-chat/common": "workspace:*",
 		"@tanstack/router-plugin": "^1.120.20",
 		"@types/bun": "latest",
 		"@types/react": "^19",
