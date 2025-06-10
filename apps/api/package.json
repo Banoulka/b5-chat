@@ -17,6 +17,8 @@
 		"typescript": "^5"
 	},
 	"dependencies": {
+		"@auth/core": "^0.39.1",
+		"@auth/drizzle-adapter": "^1.9.1",
 		"@t3-oss/env-core": "^0.13.6",
 		"drizzle-orm": "^0.44.2",
 		"zod": "^3.25.56"

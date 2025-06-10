@@ -1,6 +1,8 @@
+import { sql } from 'bun';
 import { readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { ClientResponse } from './lib/ClientResponse';
+import { authHandler } from './service/auth';
 
 const paths = path.join(import.meta.dirname, 'paths');
 
@@ -44,11 +46,24 @@ export const router = async () => {
 		}),
 	);
 
+	const authRoutes = {
+		'/auth/:next': authHandler,
+	};
+
 	const notFoundRoute = {
 		'/**': () => ClientResponse.json({ error: 'Not Found' }, { status: 404 }),
 	};
 
-	return { ...routeObj, ...notFoundRoute } as Routes;
+	const testUserObj = {
+		'/user/:id': {
+			GET: async (req: Bun.BunRequest<'/user/:id'>) => {
+				const [user] = await sql`SELECT * FROM users WHERE id = ${req.params.id}`;
+				return ClientResponse.json(user);
+			},
+		},
+	};
+
+	return { ...routeObj, ...authRoutes, ...notFoundRoute, ...testUserObj } as Routes;
 };
 
 export const route = <TPath extends string>(
