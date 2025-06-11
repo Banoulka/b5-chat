@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { useEffect, useRef, useState } from 'react';
+import Markdown from 'react-markdown';
 
 import { api, useAuth } from '@/components/auth/AuthContext';
 import { Button } from '@/components/ui/button';
-import { streamResponse } from '@/lib/streamResponse';
+import { useStream } from '@/hooks/use-stream';
 
 export const Route = createFileRoute('/')({
 	component: Index,
@@ -34,36 +34,15 @@ function Index() {
 }
 
 const TestStreamer = () => {
-	const [data, setData] = useState('');
-	const abortControllerRef = useRef<AbortController | null>(null);
-
-	const fetchStream = () => {
-		setData('');
-		const abortController = new AbortController();
-		abortControllerRef.current = abortController;
-
-		streamResponse('/stream', {
-			abortController,
-			onData: (data) => setData((prev) => prev + data),
-			onEnd: () => {
-				console.log('Stream ended');
-				abortControllerRef.current = null;
-			},
-			onError: (error) => console.error(error),
-		});
-	};
-
-	useEffect(() => {
-		return () => {
-			abortControllerRef.current?.abort();
-		};
-	}, []);
+	const { tokens, controls } = useStream('/stream', '1234');
 
 	return (
 		<div>
-			<Button onClick={fetchStream}>Fetch Stream</Button>
-			{abortControllerRef.current && <Button onClick={() => abortControllerRef.current?.abort()}>Abort</Button>}
-			<pre className="mt-4 text-xs whitespace-pre-wrap">{data}</pre>
+			<Button onClick={controls.start}>Fetch Stream</Button>
+			{controls.canStop && <Button onClick={controls.stop}>Abort</Button>}
+			<div className="mt-4 min-h-[50vh] min-w-full rounded-md bg-red-200 p-2 text-xs whitespace-pre-wrap">
+				<Markdown>{tokens}</Markdown>
+			</div>
 		</div>
 	);
 };

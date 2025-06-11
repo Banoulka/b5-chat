@@ -36,11 +36,14 @@ export const authHandler = (req: Request) => Auth(req, authConfig);
 
 export async function getSession(req: Request) {
 	setEnvDefaults(process.env, authConfig);
+	console.log('after env defaults');
 	const url = createActionURL('session', req.url, req.headers, process.env, authConfig);
-
+	console.log('after createActionURL');
 	const response = await Auth(new Request(url, { headers: { cookie: req.headers.get('cookie') ?? '' } }), authConfig);
+	console.log('after Auth');
 
 	const { status = 200 } = response;
+	console.log('after response', status);
 
 	const data = await response.json();
 
