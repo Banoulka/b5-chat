@@ -4,9 +4,9 @@ import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-quer
 import { useState } from 'react';
 
 import reactLogo from './assets/logo.png';
+import { Badge } from './components/ui/badge';
 import { Button } from './components/ui/button';
 import { env } from './env';
-import { Badge } from './components/ui/badge';
 
 const queryClient = new QueryClient();
 

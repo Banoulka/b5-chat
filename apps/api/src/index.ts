@@ -1,7 +1,7 @@
 import console from 'console';
 import { env } from './env';
-import './llm/agent';
-import { printRoutes, router } from './router';
+// import './llm/agent';
+import { printRoutes, router } from './lib/router/router';
 import './service/db';
 
 const routes = await router();
@@ -24,8 +24,9 @@ const server = Bun.serve({
 });
 
 // test emitter
+// const testId = '1234';
 // const emitter = getEmitter(testId);
-// const file = Bun.file(resolve(import.meta.dirname, 'paths/test-text.txt'));
+// const file = Bun.file(resolve(import.meta.dirname, 'test-text.txt'));
 
 // const fileText = await file.text();
 // const chunkSize = 6;
@@ -36,7 +37,7 @@ const server = Bun.serve({
 // 		const totalChunks = Math.ceil(fileText.length / chunkSize);
 
 // 		for (let i = 0; i < totalChunks; i++) {
-// 			const delay = Math.random() * 1000;
+// 			const delay = Math.random() * 80;
 // 			await new Promise((resolve) => setTimeout(resolve, delay));
 
 // 			const chunk = fileText.slice(i * chunkSize, (i + 1) * chunkSize);

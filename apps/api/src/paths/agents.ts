@@ -1,6 +1,6 @@
 import { ClientResponse } from '../lib/ClientResponse';
+import { route } from '../lib/router/route';
 import { agentsData } from '../llm/config';
-import { route } from '../router';
 
 export const GET = route('/agents', async () => {
 	// TODO: Add user preferences?

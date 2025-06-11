@@ -15,6 +15,7 @@ import { Route as LogoutImport } from './routes/logout'
 import { Route as LoginImport } from './routes/login'
 import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
+import { Route as ThreadsThreadIdImport } from './routes/threads/$threadId'
 
 // Create/Update Routes
 
@@ -39,6 +40,12 @@ const AboutRoute = AboutImport.update({
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ThreadsThreadIdRoute = ThreadsThreadIdImport.update({
+  id: '/threads/$threadId',
+  path: '/threads/$threadId',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -74,6 +81,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LogoutImport
       parentRoute: typeof rootRoute
     }
+    '/threads/$threadId': {
+      id: '/threads/$threadId'
+      path: '/threads/$threadId'
+      fullPath: '/threads/$threadId'
+      preLoaderRoute: typeof ThreadsThreadIdImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -84,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
+  '/threads/$threadId': typeof ThreadsThreadIdRoute
 }
 
 export interface FileRoutesByTo {
@@ -91,6 +106,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
+  '/threads/$threadId': typeof ThreadsThreadIdRoute
 }
 
 export interface FileRoutesById {
@@ -99,14 +115,15 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
+  '/threads/$threadId': typeof ThreadsThreadIdRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/login' | '/logout'
+  fullPaths: '/' | '/about' | '/login' | '/logout' | '/threads/$threadId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/login' | '/logout'
-  id: '__root__' | '/' | '/about' | '/login' | '/logout'
+  to: '/' | '/about' | '/login' | '/logout' | '/threads/$threadId'
+  id: '__root__' | '/' | '/about' | '/login' | '/logout' | '/threads/$threadId'
   fileRoutesById: FileRoutesById
 }
 
@@ -115,6 +132,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   LoginRoute: typeof LoginRoute
   LogoutRoute: typeof LogoutRoute
+  ThreadsThreadIdRoute: typeof ThreadsThreadIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -122,6 +140,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   LoginRoute: LoginRoute,
   LogoutRoute: LogoutRoute,
+  ThreadsThreadIdRoute: ThreadsThreadIdRoute,
 }
 
 export const routeTree = rootRoute
@@ -137,7 +156,8 @@ export const routeTree = rootRoute
         "/",
         "/about",
         "/login",
-        "/logout"
+        "/logout",
+        "/threads/$threadId"
       ]
     },
     "/": {
@@ -151,6 +171,9 @@ export const routeTree = rootRoute
     },
     "/logout": {
       "filePath": "logout.tsx"
+    },
+    "/threads/$threadId": {
+      "filePath": "threads/$threadId.tsx"
     }
   }
 }

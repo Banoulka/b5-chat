@@ -1,7 +1,7 @@
-import type { API_ThreadResponse } from '@b5-chat/common';
+import type { API_ThreadsResponse } from '@b5-chat/common';
 import { ClientResponse } from '../lib/ClientResponse';
+import { route } from '../lib/router/route';
 import { auth } from '../middleware/auth';
-import { route } from '../router';
 import { db } from '../service/db';
 
 export const GET = route(
@@ -20,7 +20,7 @@ export const GET = route(
 				prevCursor: null,
 				total: threads.length,
 			},
-		} satisfies API_ThreadResponse);
+		} satisfies API_ThreadsResponse);
 	},
 	[auth],
 );

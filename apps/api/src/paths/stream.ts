@@ -1,5 +1,5 @@
+import { route } from '../lib/router/route';
 import { streamSession } from '../lib/stream';
-import { route } from '../router';
 
 export const testId = '1234';
 
