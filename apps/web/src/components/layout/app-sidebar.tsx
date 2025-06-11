@@ -1,4 +1,3 @@
-import type { API_Agent, API_ThreadsResponse } from '@b5-chat/common';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 
@@ -10,24 +9,23 @@ import {
 	SidebarGroupContent,
 	SidebarGroupLabel,
 	SidebarHeader,
+	SidebarTrigger,
 } from '@/components/ui/sidebar';
-
-import { api } from '../auth/AuthContext';
+import { getAgentOpts, getThreadOpts } from '@/hooks/queries';
 
 export function AppSidebar() {
-	const { data: agents } = useQuery({
-		queryFn: () => api<API_Agent[]>('/agents'),
-		queryKey: ['agents'],
-	});
-
-	const { data: threads } = useQuery({
-		queryFn: () => api<API_ThreadsResponse>('/threads'),
-		queryKey: ['threads'],
-	});
+	const { data: agents } = useQuery(getAgentOpts);
+	const { data: threads } = useQuery(getThreadOpts);
 
 	return (
 		<Sidebar>
-			<SidebarHeader />
+			<SidebarHeader>
+				<h1 className="m-1 w-full text-center text-lg font-light">b5.chat</h1>
+			</SidebarHeader>
+			<div className="bg-secondary pointer-events-auto fixed top-2 left-2 z-50 m-1 flex flex-row gap-0.5 rounded">
+				<SidebarTrigger />
+			</div>
+			<div className="mt-8"></div>
 			<SidebarContent>
 				<Link to="/">Test test test</Link>
 				<Link to="/about">About page</Link>

@@ -5,7 +5,7 @@ import type React from 'react';
 
 import { AuthProvider, useAuth } from '@/components/auth/AuthContext';
 import { AppSidebar } from '@/components/layout/app-sidebar';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { LoadingSpinner } from '@/components/ui/spinner';
 import { env } from '@/env';
 
@@ -20,8 +20,7 @@ export const Route = createRootRoute({
 					<AuthLoader>
 						<SidebarProvider>
 							<AppSidebar />
-							<main>
-								<SidebarTrigger />
+							<main className="w-full">
 								<Outlet />
 							</main>
 						</SidebarProvider>

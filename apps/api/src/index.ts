@@ -37,7 +37,7 @@ const server = Bun.serve({
 // 		const totalChunks = Math.ceil(fileText.length / chunkSize);
 
 // 		for (let i = 0; i < totalChunks; i++) {
-// 			const delay = Math.random() * 80;
+// 			const delay = Math.random() * 450;
 // 			await new Promise((resolve) => setTimeout(resolve, delay));
 
 // 			const chunk = fileText.slice(i * chunkSize, (i + 1) * chunkSize);
