@@ -76,7 +76,7 @@ const frameEncode = (token: string, id: number) => {
 	if (token.startsWith(' ')) token = ' ' + token;
 
 	// preserve new line
-	if (token === '\n') return `id:${id}\ndata:\n\n`;
+	// if (token === '\n') return `id:${id}\ndata:\n\n`;
 
 	// preserve new lines inside token (by sending multiple data lines)
 	return `id:${id}\ndata:${token.replace(/\r?\n/g, '\ndata:')}\n\n`;
