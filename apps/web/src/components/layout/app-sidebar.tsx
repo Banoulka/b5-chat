@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
+import { useEffect, useState } from 'react';
 
 import {
 	Sidebar,
@@ -9,6 +10,7 @@ import {
 	SidebarGroupContent,
 	SidebarGroupLabel,
 	SidebarHeader,
+	SidebarProvider,
 	SidebarRail,
 	SidebarTrigger,
 } from '@/components/ui/sidebar';
@@ -18,8 +20,24 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 	const { data: agents } = useQuery(getAgentOpts);
 	const { data: threads } = useQuery(getThreadOpts);
 
+	// Load default state from localStorage
+	const [defaultOpen, setDefaultOpen] = useState(true);
+	const [defaultWidth, setDefaultWidth] = useState('16rem');
+
+	useEffect(() => {
+		const savedState = localStorage.getItem('sidebar:state');
+		const savedWidth = localStorage.getItem('sidebar:width');
+
+		if (savedState !== null) {
+			setDefaultOpen(savedState === 'true');
+		}
+		if (savedWidth) {
+			setDefaultWidth(savedWidth);
+		}
+	}, []);
+
 	return (
-		<>
+		<SidebarProvider defaultOpen={defaultOpen} defaultWidth={defaultWidth}>
 			<Sidebar>
 				<SidebarHeader>
 					<h1 className="m-1 w-full text-center text-lg font-light">b5.chat</h1>
@@ -56,6 +74,6 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 				<SidebarRail />
 			</Sidebar>
 			{children}
-		</>
+		</SidebarProvider>
 	);
 }

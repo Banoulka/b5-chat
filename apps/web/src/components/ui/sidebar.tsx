@@ -14,8 +14,7 @@ import { useSidebarResize } from '@/hooks/use-sidebar-resize';
 import { mergeButtonRefs } from '@/lib/merge-button-refs';
 import { cn } from '@/lib/utils';
 
-const SIDEBAR_COOKIE_NAME = 'sidebar:state';
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
+const SIDEBAR_STORAGE_KEY = 'sidebar:state';
 const SIDEBAR_WIDTH = '16rem';
 const SIDEBAR_WIDTH_MOBILE = '18rem';
 const SIDEBAR_WIDTH_ICON = '3rem';
@@ -95,8 +94,8 @@ const SidebarProvider = React.forwardRef<
 					_setOpen(openState);
 				}
 
-				// This sets the cookie to keep the sidebar state.
-				document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+				// This sets the localStorage to keep the sidebar state.
+				localStorage.setItem(SIDEBAR_STORAGE_KEY, openState.toString());
 			},
 			[setOpenProp, open],
 		);
@@ -342,8 +341,7 @@ const SidebarRail = React.forwardRef<
 		onResize: setWidth,
 		onToggle: toggleSidebar,
 		setIsDraggingRail,
-		widthCookieMaxAge: 60 * 60 * 24 * 7,
-		widthCookieName: 'sidebar:width', // 1 week
+		widthStorageKey: 'sidebar:width',
 	});
 
 	//* Merge external ref with our dragRef

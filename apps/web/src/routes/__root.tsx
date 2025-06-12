@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { createRootRoute } from '@tanstack/react-router';
+import { createRootRoute, Outlet } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 import type React from 'react';
 
@@ -22,7 +22,7 @@ export const Route = createRootRoute({
 						<SidebarProvider>
 							<AppSidebar>
 								<AppSidebarInset>
-									<p>test outlet</p>
+									<Outlet />
 								</AppSidebarInset>
 							</AppSidebar>
 						</SidebarProvider>

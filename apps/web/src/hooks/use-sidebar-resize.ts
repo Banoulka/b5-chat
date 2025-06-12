@@ -69,14 +69,9 @@ export interface UseSidebarResizeProps {
 	setIsDraggingRail?: (isDragging: boolean) => void;
 
 	/**
-	 * Cookie name for persisting width
+	 * Storage key for persisting width
 	 */
-	widthCookieName?: string;
-
-	/**
-	 * Cookie max age in seconds
-	 */
-	widthCookieMaxAge?: number;
+	widthStorageKey?: string;
 
 	/**
 	 * Whether this is a nested sidebar (not at the edge of the screen)
@@ -137,8 +132,7 @@ export function useSidebarResize({
 	expandThreshold = 0.2,
 	enableDrag = true,
 	setIsDraggingRail = () => {},
-	widthCookieName,
-	widthCookieMaxAge = 60 * 60 * 24 * 7, // 1 week default
+	widthStorageKey,
 	isNested = false,
 }: UseSidebarResizeProps) {
 	// Refs for tracking drag state
@@ -208,14 +202,14 @@ export function useSidebarResize({
 		autoCollapseThresholdPx.current = enableAutoCollapse ? minWidthPx * autoCollapseThreshold : 0;
 	}, [minWidthPx, enableAutoCollapse, autoCollapseThreshold]);
 
-	// Persist width to cookie if cookie name is provided
+	// Persist width to localStorage if storage key is provided
 	const persistWidth = React.useCallback(
 		(width: string) => {
-			if (widthCookieName) {
-				document.cookie = `${widthCookieName}=${width}; path=/; max-age=${widthCookieMaxAge}`;
+			if (widthStorageKey) {
+				localStorage.setItem(widthStorageKey, width);
 			}
 		},
-		[widthCookieName, widthCookieMaxAge],
+		[widthStorageKey],
 	);
 
 	// Handle mouse down on resize handle
