@@ -7,13 +7,6 @@ export type Session = {
 	};
 };
 
-export type API_Agent = {
-	id: string;
-	name: string;
-	description: string;
-	features: string[];
-};
-
 export type APIThreadMessage = {
 	id: string;
 	type: 'agent' | 'user';
@@ -45,3 +38,7 @@ export type API_ThreadMessagesResponse = {
 		nextCursor: string | null;
 	};
 };
+
+// LLM
+export type Capability = 'tools' | 'web' | 'image' | 'file';
+export type ModelCard = { id: string; name: string; desc: string; supported: Capability[] };

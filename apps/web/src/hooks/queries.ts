@@ -1,4 +1,4 @@
-import type { API_Agent, API_ThreadsResponse } from '@b5-chat/common';
+import type { API_ThreadsResponse, ModelCard } from '@b5-chat/common';
 
 import { api } from '@/components/auth/AuthContext';
 
@@ -8,6 +8,6 @@ export const getThreadOpts = {
 };
 
 export const getAgentOpts = {
-	queryFn: () => api<API_Agent[]>('/agents'),
+	queryFn: () => api<ModelCard[]>('/agents'),
 	queryKey: ['agents'],
 };

@@ -1,10 +1,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { createRootRoute, Outlet } from '@tanstack/react-router';
+import { createRootRoute } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 import type React from 'react';
 
 import { AuthProvider, useAuth } from '@/components/auth/AuthContext';
 import { AppSidebar } from '@/components/layout/app-sidebar';
+import { AppSidebarInset } from '@/components/layout/app-sidebar-inset';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { LoadingSpinner } from '@/components/ui/spinner';
 import { env } from '@/env';
@@ -19,10 +20,11 @@ export const Route = createRootRoute({
 				<QueryClientProvider client={queryClient}>
 					<AuthLoader>
 						<SidebarProvider>
-							<AppSidebar />
-							<main className="w-full">
-								<Outlet />
-							</main>
+							<AppSidebar>
+								<AppSidebarInset>
+									<p>test outlet</p>
+								</AppSidebarInset>
+							</AppSidebar>
 						</SidebarProvider>
 					</AuthLoader>
 				</QueryClientProvider>
