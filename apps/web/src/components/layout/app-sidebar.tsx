@@ -10,13 +10,24 @@ import {
 	SidebarGroupContent,
 	SidebarGroupLabel,
 	SidebarHeader,
+	SidebarMenuButton,
+	SidebarMenuItem,
 	SidebarProvider,
 	SidebarRail,
 	SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { getAgentOpts, getThreadOpts } from '@/hooks/queries';
+import {
+	DropdownMenu,
+	DropdownMenuTrigger,
+	DropdownMenuContent,
+	DropdownMenuItem,
+} from '@radix-ui/react-dropdown-menu';
+import { useAuth } from '../auth/AuthContext';
 
 export function AppSidebar({ children }: { children: React.ReactNode }) {
+	const { session, isSignedIn } = useAuth();
+
 	const { data: agents } = useQuery(getAgentOpts);
 	const { data: threads } = useQuery(getThreadOpts);
 
@@ -68,12 +79,35 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
 					{agents?.map((agent) => <p key={agent.id}>{agent.name}</p>)}
 				</SidebarContent>
+
 				<SidebarFooter>
-					<p>something in the footer</p>
+					<SidebarContent>
+						<SidebarMenuItem>
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<SidebarMenuButton>Account</SidebarMenuButton>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent>
+									<DropdownMenuItem>
+										<span>
+											<Link to="/settings">Settings</Link>
+										</span>
+									</DropdownMenuItem>
+									<DropdownMenuItem>
+										<span>
+											{isSignedIn ? (
+												<Link to="/logout">Logout</Link>
+											) : (
+												<Link to="/login">Login</Link>
+											)}
+										</span>
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</SidebarMenuItem>
+					</SidebarContent>
 				</SidebarFooter>
-				<SidebarRail />
 			</Sidebar>
-			{children}
 		</SidebarProvider>
 	);
 }
