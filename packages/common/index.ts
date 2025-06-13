@@ -25,8 +25,8 @@ export type APIThread = {
 export type API_ThreadsResponse = {
 	data: APIThread[];
 	meta: {
-		nextCursor: string | null;
-		prevCursor: string | null;
+		nextCursor: number | null;
+		prevCursor: number | null;
 		total: number;
 	};
 };
@@ -34,8 +34,8 @@ export type API_ThreadsResponse = {
 export type API_ThreadMessagesResponse = {
 	data: APIThreadMessage[];
 	meta: {
-		prevCursor: string | null;
-		nextCursor: string | null;
+		// prevCursor: number | null;
+		nextCursor: number | null;
 	};
 };
 
