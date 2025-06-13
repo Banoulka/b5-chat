@@ -7,7 +7,6 @@ import type React from 'react';
 import { AuthProvider, useAuth } from '@/components/auth/AuthContext';
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { AppSidebarInset } from '@/components/layout/app-sidebar-inset';
-import { SidebarProvider } from '@/components/ui/sidebar';
 import { LoadingSpinner } from '@/components/ui/spinner';
 import { env } from '@/env';
 
@@ -20,13 +19,11 @@ export const Route = createRootRoute({
 			<AuthProvider>
 				<QueryClientProvider client={queryClient}>
 					<AuthLoader>
-						<SidebarProvider>
-							<AppSidebar>
-								<AppSidebarInset>
-									<Outlet />
-								</AppSidebarInset>
-							</AppSidebar>
-						</SidebarProvider>
+						<AppSidebar>
+							<AppSidebarInset>
+								<Outlet />
+							</AppSidebarInset>
+						</AppSidebar>
 					</AuthLoader>
 					<ReactQueryDevtools />
 				</QueryClientProvider>

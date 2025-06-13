@@ -1,3 +1,9 @@
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from '@radix-ui/react-dropdown-menu';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
@@ -17,12 +23,7 @@ import {
 	SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { getAgentOpts, getThreadOpts } from '@/hooks/queries';
-import {
-	DropdownMenu,
-	DropdownMenuTrigger,
-	DropdownMenuContent,
-	DropdownMenuItem,
-} from '@radix-ui/react-dropdown-menu';
+
 import { useAuth } from '../auth/AuthContext';
 
 export function AppSidebar({ children }: { children: React.ReactNode }) {
@@ -107,7 +108,9 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 						</SidebarMenuItem>
 					</SidebarContent>
 				</SidebarFooter>
+				<SidebarRail />
 			</Sidebar>
+			{children}
 		</SidebarProvider>
 	);
 }
