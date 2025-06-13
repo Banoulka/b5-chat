@@ -7,23 +7,38 @@ export type Session = {
 	};
 };
 
-export type API_Agent = {
+export type APIThreadMessage = {
 	id: string;
-	name: string;
-	description: string;
-	features: string[];
+	type: 'agent' | 'user';
+	content: string;
+	createdAt: string;
+	updatedAt: string;
 };
 
-export type API_ThreadResponse = {
-	data: {
-		id: string;
-		name: string;
-		createdAt: string;
-		updatedAt: string;
-	}[];
+export type APIThread = {
+	id: string;
+	name: string;
+	createdAt: string;
+	updatedAt: string;
+};
+
+export type API_ThreadsResponse = {
+	data: APIThread[];
 	meta: {
 		nextCursor: string | null;
 		prevCursor: string | null;
 		total: number;
 	};
 };
+
+export type API_ThreadMessagesResponse = {
+	data: APIThreadMessage[];
+	meta: {
+		prevCursor: string | null;
+		nextCursor: string | null;
+	};
+};
+
+// LLM
+export type Capability = 'tools' | 'web' | 'image' | 'file';
+export type ModelCard = { id: string; name: string; desc: string; supported: Capability[] };

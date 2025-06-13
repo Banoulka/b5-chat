@@ -30,7 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 	const [isLoading, setIsLoading] = useState(true);
 
 	useEffect(() => {
-		api<Session>('/auth/session')
+		api<Session>('/me')
 			.then(setSession)
 			.finally(() => setIsLoading(false));
 	}, []);

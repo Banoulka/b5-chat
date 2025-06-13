@@ -1,14 +1,16 @@
 import { readdir } from 'node:fs/promises';
 import path from 'node:path';
-import { env } from './env';
-import { ClientResponse } from './lib/ClientResponse';
-import { applyMiddlewareToRequest, type Middleware } from './middleware';
-import { logging } from './middleware/logging';
-import { authHandler, getSession } from './service/auth';
+import { env } from '../../env';
+import { applyMiddlewareToRequest, type Middleware } from '../../middleware';
+import { logging } from '../../middleware/logging';
+import { authHandler, getSession } from '../../service/auth';
+import { ClientResponse } from '../ClientResponse';
 
 console.log('Web URL', env.WEB_URL);
 
-const paths = path.join(import.meta.dirname, 'paths');
+const paths = path.join(import.meta.dirname, '../../paths');
+
+console.log('Paths', paths);
 
 type Method = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
@@ -37,6 +39,8 @@ export const router = async () => {
 
 	await Promise.all(
 		loadedPaths.map(async (filePath) => {
+			if (!filePath.endsWith('.ts')) return;
+
 			const fullPath = path.join(paths, filePath);
 			const module = (await import(fullPath)) as ImportedModule; // eslint-disable-line @typescript-eslint/no-unsafe-assignment
 
@@ -88,18 +92,6 @@ export const router = async () => {
 	};
 
 	return { ...routeObj, ...authRoutes, ...notFoundRoute, ...redirectHomeUrl } as Routes;
-};
-
-export const route = <TPath extends string>(
-	path: TPath,
-	handler: (req: Bun.BunRequest<TPath>) => Promise<Response>,
-	middleware?: Middleware[],
-) => {
-	return {
-		path,
-		handler,
-		middleware,
-	};
 };
 
 export const printRoutes = (routes: Routes) => {

@@ -4,7 +4,7 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"dev": "bun run --hot src/index.ts ",
+		"dev": "bun run --watch src/index.ts ",
 		"build": "bun build src/index.ts --outfile dist/index.js",
 		"start": "bun run dist/index.js"
 	},
@@ -27,6 +27,7 @@
 		"@langchain/tavily": "^0.1.2",
 		"@t3-oss/env-core": "^0.13.6",
 		"drizzle-orm": "^0.44.2",
+		"openai": "^5.3.0",
 		"zod": "^3.25.56"
 	}
 }

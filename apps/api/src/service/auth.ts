@@ -1,6 +1,7 @@
 import { Auth, createActionURL, setEnvDefaults, type AuthConfig } from '@auth/core';
 import GitHub from '@auth/core/providers/github';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
+import type { Session } from '@b5-chat/common';
 import { env } from '../env';
 import { db } from './db';
 
@@ -37,7 +38,6 @@ export const authHandler = (req: Request) => Auth(req, authConfig);
 export async function getSession(req: Request) {
 	setEnvDefaults(process.env, authConfig);
 	const url = createActionURL('session', req.url, req.headers, process.env, authConfig);
-
 	const response = await Auth(new Request(url, { headers: { cookie: req.headers.get('cookie') ?? '' } }), authConfig);
 
 	const { status = 200 } = response;
@@ -45,6 +45,6 @@ export async function getSession(req: Request) {
 	const data = await response.json();
 
 	if (!data || !Object.keys(data).length) return null;
-	if (status === 200) return data;
+	if (status === 200) return data as Session;
 	return null;
 }
