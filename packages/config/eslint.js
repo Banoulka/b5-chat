@@ -22,5 +22,6 @@ export default tseslint.config(eslint.configs.recommended, tseslint.configs.reco
 		'sort-keys-fix/sort-keys-fix': 'error',
 		'simple-import-sort/imports': 'error',
 		'simple-import-sort/exports': 'error',
+		'@typescript-eslint/no-unused-vars': 'warn',
 	},
 });

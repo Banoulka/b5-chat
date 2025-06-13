@@ -31,11 +31,15 @@ function RouteComponent() {
 	if (isLoading) return <div>Loading...</div>;
 	if (!thread) return <div>Not found</div>;
 
+	const handleSendNewMessage = (content: string) => {
+		console.log('handleSendNewMessage', content);
+	};
+
 	return (
 		<>
-			<MessageList bottomRefHeight={size.height} threadId={threadId} />
+			<MessageList key={threadId} bottomRefHeight={size.height} threadId={threadId} />
 			<div ref={bottomRef}>
-				<MessageInput />
+				<MessageInput threadId={threadId} key={threadId} onSendNewMessage={handleSendNewMessage} />
 			</div>
 		</>
 	);

@@ -57,11 +57,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 				<div className="bg-secondary pointer-events-auto fixed top-2 left-2 z-50 m-1 flex flex-row gap-0.5 rounded">
 					<SidebarTrigger />
 				</div>
-				<div className="mt-8"></div>
 				<SidebarContent>
-					<Link to="/">Test test test</Link>
-					<Link to="/about">About page</Link>
-
 					<SidebarGroup>
 						<SidebarGroupLabel>Threads</SidebarGroupLabel>
 						<SidebarGroupContent>
@@ -77,8 +73,6 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 							))}
 						</SidebarGroupContent>
 					</SidebarGroup>
-
-					{agents?.map((agent) => <p key={agent.id}>{agent.name}</p>)}
 				</SidebarContent>
 
 				<SidebarFooter>

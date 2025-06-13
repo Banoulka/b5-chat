@@ -1,31 +1,37 @@
 import type { API_ThreadMessagesResponse } from '@b5-chat/common';
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 import { cn } from '@/lib/utils';
 
 import { api } from '../auth/AuthContext';
+import { Skeleton } from '../ui/skeleton';
 
 type Props = {
 	bottomRefHeight: number;
 	threadId: string;
 };
 
+type LocalMessage = {
+	type: 'local';
+	localId: string;
+	content: string;
+};
+
+type MessageData = API_ThreadMessagesResponse['data'][number] | LocalMessage;
+
 const SCROLL_THRESHOLD = 50;
 
 const MessageList = ({ bottomRefHeight, threadId }: Props) => {
 	const scrollRef = useRef<HTMLDivElement>(null);
-	const [hasFirstPageLoaded, setHasFirstPageLoaded] = useState(false);
 
 	const { data, isFetching, isFetchPreviousPageError, fetchNextPage, hasNextPage, isFetchingNextPage } =
-		useInfiniteQuery<API_ThreadMessagesResponse>({
+		useInfiniteQuery<Omit<API_ThreadMessagesResponse, 'data'> & { data: MessageData[] }>({
 			getNextPageParam: (lastPage) => lastPage?.meta?.nextCursor,
 			initialPageParam: undefined,
 			placeholderData: keepPreviousData,
 			queryFn: ({ pageParam }) =>
-				api<API_ThreadMessagesResponse>(
-					pageParam ? `/threads/${threadId}/messages?from=${pageParam}` : `/threads/${threadId}/messages`,
-				),
+				api(pageParam ? `/threads/${threadId}/messages?from=${pageParam}` : `/threads/${threadId}/messages`),
 			queryKey: ['messages', threadId],
 		});
 
@@ -39,11 +45,12 @@ const MessageList = ({ bottomRefHeight, threadId }: Props) => {
 	};
 
 	useEffect(() => {
-		if (hasFirstPageLoaded || isFetching) return;
-
+		// console.log('hasFirstPageLoaded', hasFirstPageLoaded, isFetching);
+		// if (hasFirstPageLoaded || isFetching) return;
+		console.log('scrollToBottom');
 		scrollToBottom();
-		setHasFirstPageLoaded(true);
-	}, [hasFirstPageLoaded, isFetching]);
+		// setHasFirstPageLoaded(true);
+	}, [scrollRef.current]);
 
 	return (
 		<div
@@ -61,17 +68,33 @@ const MessageList = ({ bottomRefHeight, threadId }: Props) => {
 			}}
 		>
 			{isFetchPreviousPageError && <div>Error</div>}
+			{isFetching &&
+				new Array(10)
+					.fill(0)
+					.map((_, index) => (
+						<Skeleton className={cn('m-2 flex flex-col rounded bg-gray-200 p-4')} key={index} />
+					))}
 			{flatPages?.map((message) => (
-				<div
-					className={cn('m-2 flex flex-col p-2', {
-						'bg-blue-200 text-left': message.type === 'user',
-						'bg-green-200 text-center': message.type === 'agent',
-					})}
-					key={message.id}
-				>
-					{message.content}
-				</div>
+				<MessageDisplay message={message} key={message.type === 'local' ? message.localId : message.id} />
 			))}
+		</div>
+	);
+};
+
+const MessageDisplay = ({ message }: { message: MessageData }) => {
+	return (
+		<div
+			className="m-2 mx-auto flex w-[70%] flex-col items-end"
+			key={message.type === 'local' ? message.localId : message.id}
+		>
+			<p
+				className={cn('rounded p-2', {
+					'w-fit max-w-[70%] bg-blue-200': message.type === 'user',
+					'w-full bg-green-200': message.type === 'agent',
+				})}
+			>
+				{message.content}
+			</p>
 		</div>
 	);
 };
