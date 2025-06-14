@@ -78,6 +78,7 @@ export const streamSession = (id: string, from: number) => {
 			const d = () => {
 				console.log('ReadableStream closed because session is done');
 				ctrl.close();
+				sessions.delete(id);
 			};
 			tokenHandler = h;
 			doneHandler = d;
