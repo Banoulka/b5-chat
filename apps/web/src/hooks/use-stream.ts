@@ -1,41 +1,96 @@
-import { useMemo, useState } from 'react';
+import { END_OF_TEXT_TOKEN } from '@b5-chat/common';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { env } from '@/env';
 
 const useStreamVersion = 1;
 
-export const useStream = (url: string, id: string) => {
+type UseStreamOptions = {
+	url: string;
+	id: string;
+	onComplete?: () => void;
+};
+
+export const useStream = ({ url, id, onComplete }: UseStreamOptions) => {
 	const key = useMemo(() => `stream-${useStreamVersion}:${id}`, [id, useStreamVersion]);
 
-	const [tokens, setTokens] = useState<string>(() => localStorage.getItem(key) ?? '');
-	const [eventSource, setEventSource] = useState<EventSource | null>(null);
+	const [tokens, setTokens] = useState<string>('');
+	const eventSourceRef = useRef<EventSource | null>(null);
+	const [isStreaming, setIsStreaming] = useState(false);
 
-	const controls = {
-		canStop: eventSource !== null,
-		start: () => {
-			if (eventSource) return;
+	// On key changes we need to:
+	// - stop any existing event source
+	// - swap out local tokens
+	useEffect(() => {
+		return () => {
+			stop();
+			setTokens('');
+		};
+	}, [key]);
 
-			const newSource = new EventSource(`${env.VITE_API_URL}${url}?from=${tokens.length}`);
-			setEventSource(newSource);
-			newSource.onmessage = (e) =>
-				setTokens((prev) => {
-					console.log(`got message "${e.data}"`, e.data.length);
-					const next = prev + e.data;
-					localStorage.setItem(key, next);
-					return next;
-				});
-		},
-		stop: () => {
-			eventSource?.close();
-			setEventSource(null);
-		},
-	};
+	const stop = useCallback(() => {
+		eventSourceRef.current?.close();
+		eventSourceRef.current = null;
+		setIsStreaming(false);
+	}, [key]);
 
-	// Start on mount?
-	// useEffect(() => {
-	// 	controls.start();
-	// 	return () => controls.stop();
-	// }, [id, url]);
+	const start = useCallback(() => {
+		console.log('starting stream', eventSourceRef.current);
+		if (eventSourceRef.current) return;
 
-	return { controls, tokens };
+		setIsStreaming(true);
+		const newSource = new EventSource(`${env.VITE_API_URL}${url}?from=${tokens.length}`);
+		eventSourceRef.current = newSource;
+		newSource.onmessage = (e) =>
+			setTokens((prev) => {
+				console.log(`got message "${e.data}"`, e.data.length);
+
+				if (e.data === END_OF_TEXT_TOKEN || e.data.includes(END_OF_TEXT_TOKEN)) {
+					stop();
+					localStorage.removeItem(key); // we are done we no more need
+					onComplete?.();
+					return prev;
+				}
+
+				const next = prev + e.data;
+				localStorage.setItem(key, next);
+				return next;
+			});
+	}, [url, tokens.length, stop]);
+
+	const tryResume = useCallback(async () => {
+		if (eventSourceRef.current) return;
+
+		const headRequest = await fetch(`${env.VITE_API_URL}${url}`, {
+			method: 'HEAD',
+		}).catch((e) => {
+			console.log('Error trying to resume stream', e);
+			return null;
+		});
+
+		if (headRequest?.status === 200) {
+			// try load previous tokens and start
+			const localTokens = localStorage.getItem(key);
+			if (localTokens) setTokens(localTokens);
+			start();
+		} else {
+			console.log('Session not found, must be ended');
+			localStorage.removeItem(key); // we are done so no more remove
+		}
+	}, [url, tokens.length, stop]);
+
+	const canStop = eventSourceRef.current !== null;
+
+	// Auto-resume when the key (thread id) changes or on mount
+	useEffect(() => {
+		tryResume();
+	}, [key]);
+
+	useEffect(() => {
+		return () => {
+			console.log('cleanup stream');
+		};
+	}, [id]);
+
+	return { controls: { canStop, start, stop, tryResume }, isStreaming, tokens };
 };

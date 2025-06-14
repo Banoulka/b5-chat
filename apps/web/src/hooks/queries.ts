@@ -11,3 +11,9 @@ export const getAgentOpts = {
 	queryFn: () => api<ModelCard[]>('/agents'),
 	queryKey: ['agents'],
 };
+
+export const getMessageOpts = (threadId: string) => {
+	return {
+		queryKey: ['messages', threadId],
+	};
+};

@@ -4,15 +4,14 @@ import { env } from '../../env';
 import { applyMiddlewareToRequest, type Middleware } from '../../middleware';
 import { logging } from '../../middleware/logging';
 import { authHandler, getSession } from '../../service/auth';
+import { setCustomHeaders } from '../../utils/setCustomHeaders';
 import { ClientResponse } from '../ClientResponse';
 
 console.log('Web URL', env.WEB_URL);
 
 const paths = path.join(import.meta.dirname, '../../paths');
 
-console.log('Paths', paths);
-
-type Method = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+type Method = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS';
 
 type RouteModule = {
 	path: string;
@@ -25,6 +24,8 @@ type ImportedModule = {
 	PUT?: RouteModule;
 	DELETE?: RouteModule;
 	PATCH?: RouteModule;
+	HEAD?: RouteModule;
+	OPTIONS?: RouteModule;
 };
 
 export type Routes = Record<string, Partial<Record<Method, (req: Bun.BunRequest<string>) => Promise<Response>>>>;
@@ -59,6 +60,8 @@ export const router = async () => {
 			if (module.PUT) addHandler('PUT', module.PUT);
 			if (module.DELETE) addHandler('DELETE', module.DELETE);
 			if (module.PATCH) addHandler('PATCH', module.PATCH);
+			if (module.HEAD) addHandler('HEAD', module.HEAD);
+			if (module.OPTIONS) addHandler('OPTIONS', module.OPTIONS);
 		}),
 	);
 
@@ -66,10 +69,7 @@ export const router = async () => {
 		'/auth/*': (req: Bun.BunRequest<'/auth/*'>) =>
 			applyMiddlewareToRequest(req, [...globalMiddleware], async (req: Bun.BunRequest<'/auth/*'>) => {
 				const response = await authHandler(req);
-				response.headers.set('Access-Control-Allow-Origin', env.WEB_URL);
-				response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH');
-				response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-				response.headers.set('Access-Control-Allow-Credentials', 'true');
+				setCustomHeaders(response.headers);
 				return response;
 			}),
 	};
@@ -97,10 +97,13 @@ export const router = async () => {
 export const printRoutes = (routes: Routes) => {
 	console.log('\n\x1b[36m=== Available Routes ===\x1b[0m');
 	Object.entries(routes).forEach(([path, methods]) => {
-		console.log(`\n\x1b[33m${path}\x1b[0m`);
+		if (!Object.keys(methods).length) {
+			console.log(`  \x1b[32mALL\x1b[0m\t\x1b[33m${path}\x1b[0m`);
+			return;
+		}
+
 		Object.keys(methods).forEach((method) => {
-			console.log(`  \x1b[32m${method}\x1b[0m`);
+			console.log(`  \x1b[32m${method}\x1b[0m\t\x1b[33m${path}\x1b[0m`);
 		});
 	});
-	console.log('\n');
 };

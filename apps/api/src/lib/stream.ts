@@ -1,3 +1,4 @@
+import { END_OF_TEXT_TOKEN } from 'packages/common';
 import { ClientResponse } from './ClientResponse';
 
 type TokenData = {
@@ -28,14 +29,34 @@ export const getEmitter = (id: string) => {
 		}
 	});
 
+	emitter.addEventListener('done', () => {
+		session.done = true;
+	});
+
 	return emitter;
+};
+
+export const getSessionContent = (id: string) => {
+	const session = sessions.get(id);
+
+	if (!session) return null;
+
+	return session.tokens
+		.map((t) => t.token)
+		.join('')
+		.replace(END_OF_TEXT_TOKEN, '');
+};
+
+export const hasSession = (id: string) => {
+	return sessions.has(id);
 };
 
 export const streamSession = (id: string, from: number) => {
 	const session = sessions.get(id);
 	if (!session) return ClientResponse.json({ error: 'Session not found' }, { status: 404 });
 
-	let eventHandler: ((e: any) => void) | null = null;
+	let tokenHandler: ((e: any) => void) | null = null;
+	let doneHandler: ((e: any) => void) | null = null;
 
 	const stream = new ReadableStream({
 		start(ctrl) {
@@ -54,15 +75,19 @@ export const streamSession = (id: string, from: number) => {
 				}
 				if (done) ctrl.close();
 			};
-			eventHandler = h;
+			const d = () => {
+				console.log('ReadableStream closed because session is done');
+				ctrl.close();
+			};
+			tokenHandler = h;
+			doneHandler = d;
 			session.emitter.addEventListener('token', h);
-
-			if (session.done) ctrl.close();
+			session.emitter.addEventListener('done', d);
 		},
 		cancel() {
-			if (eventHandler) {
-				session.emitter.removeEventListener('token', eventHandler);
-			}
+			console.log('ReadableStream cancelled. Removing handlers');
+			if (tokenHandler) session.emitter.removeEventListener('token', tokenHandler);
+			if (doneHandler) session.emitter.removeEventListener('done', doneHandler);
 		},
 	});
 

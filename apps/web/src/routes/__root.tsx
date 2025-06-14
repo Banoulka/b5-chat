@@ -27,7 +27,7 @@ export const Route = createRootRoute({
 					</AuthLoader>
 					<ReactQueryDevtools />
 				</QueryClientProvider>
-				<TanStackRouterDevtools />
+				<TanStackRouterDevtools position="bottom-right" />
 			</AuthProvider>
 		</>
 	),
