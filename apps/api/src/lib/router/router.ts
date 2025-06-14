@@ -4,7 +4,6 @@ import { env } from '../../env';
 import { applyMiddlewareToRequest, type Middleware } from '../../middleware';
 import { logging } from '../../middleware/logging';
 import { authHandler, getSession } from '../../service/auth';
-import { setCustomHeaders } from '../../utils/setCustomHeaders';
 import { ClientResponse } from '../ClientResponse';
 
 console.log('Web URL', env.WEB_URL);
@@ -69,7 +68,10 @@ export const router = async () => {
 		'/auth/*': (req: Bun.BunRequest<'/auth/*'>) =>
 			applyMiddlewareToRequest(req, [...globalMiddleware], async (req: Bun.BunRequest<'/auth/*'>) => {
 				const response = await authHandler(req);
-				setCustomHeaders(response.headers);
+				response.headers.set('Access-Control-Allow-Origin', env.WEB_URL);
+				response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH');
+				response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+				response.headers.set('Access-Control-Allow-Credentials', 'true');
 				return response;
 			}),
 	};

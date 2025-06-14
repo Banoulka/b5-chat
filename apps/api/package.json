@@ -5,6 +5,7 @@
 	"private": true,
 	"scripts": {
 		"dev": "bun run --watch src/index.ts ",
+		"inspect": "bun run --inspect src/index.ts",
 		"build": "bun build src/index.ts --outfile dist/index.js",
 		"start": "bun run dist/index.js"
 	},
