@@ -5,7 +5,13 @@ import { env } from '@/env';
 
 const API = env.VITE_API_URL;
 export const api = <T,>(path: string, init: RequestInit = {}) =>
-	fetch(`${API}${path}`, { credentials: 'include', ...init }).then((res) => res.json() as Promise<T>);
+	fetch(`${API}${path}`, { credentials: 'include', ...init }).then((res) => {
+		if (300 > res.status && res.status >= 200) {
+			return res.json() as Promise<T>;
+		}
+
+		throw new Error('Network request error!!!!' + res.status);
+	});
 
 interface BaseContext {
 	signIn: () => Promise<void>;
@@ -32,6 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 	useEffect(() => {
 		api<Session>('/me')
 			.then(setSession)
+			.catch(() => setSession(null))
 			.finally(() => setIsLoading(false));
 	}, []);
 

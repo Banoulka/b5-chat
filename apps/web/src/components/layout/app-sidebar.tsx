@@ -80,7 +80,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 						<SidebarMenuItem>
 							<DropdownMenu>
 								<DropdownMenuTrigger asChild>
-									<SidebarMenuButton>Account</SidebarMenuButton>
+									<SidebarMenuButton>{isSignedIn ? session.user.name : 'Account'}</SidebarMenuButton>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent>
 									<DropdownMenuItem>
