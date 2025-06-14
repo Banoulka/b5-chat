@@ -1,46 +1,56 @@
-import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 
-import { api, useAuth } from '@/components/auth/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { SendHorizontal } from 'lucide-react';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export const Route = createFileRoute('/')({
 	component: Index,
 });
 
-const fakeMessage = {
-	// random UUID
-	content: 'Hello! How can I assist you today?',
-	// another UUID from your threads table
-	createdAt: new Date('2025-06-10T12:00:00Z'),
-	id: 'b1c0e2fc-4a5b-4d7e-b5c4-3f92a8a7b901',
-	// assuming 'user' is a valid value from your `messageTypeEnum`
-	threadId: '3d0e7e92-bf51-4f0e-ae3c-949aef8d5c9d',
-	type: 'user',
-	updatedAt: new Date('2025-06-10T12:00:00Z'),
-};
-
 function Index() {
-	const { session, isSignedIn } = useAuth();
-
-	const { data } = useQuery({
-		queryFn: () => api('/protected'),
-		queryKey: ['protected'],
-	});
-
-	console.log('session', session);
-
 	return (
-		<div className="p-2">
-			<pre>{JSON.stringify(data, null, 2)}</pre>
+		<div className="flex h-full flex-col items-center justify-center p-2">
+			<div className="bg-secondary mt-auto flex w-full flex-col rounded-2xl p-2">
+				<Textarea
+					className="max-h-90 resize-none overflow-y-auto border-none bg-transparent focus-visible:border-none dark:bg-transparent dark:text-white"
+					placeholder="Type your message here."
+				/>
+				<div className="flex">
+					<Select>
+						<SelectTrigger className="w-[180px]">
+							<SelectValue placeholder="Model" />
+						</SelectTrigger>
+						<SelectContent className="dark:bg-secondary">
+							<SelectItem value="light">ChatGPT-4o-mini</SelectItem>
+							<SelectItem value="dark">Claude 3.5</SelectItem>
+							<SelectItem value="system">DeepSeek</SelectItem>
+						</SelectContent>
+					</Select>
 
-			{isSignedIn ? <h3>Welcome home {session.user.name}!</h3> : <h3>You are not logged in.</h3>}
-
-			<Textarea className="fixed bottom-2 p-2" placeholder="Type your message here." />
-			<Button className="bg-primary hover:bg-primary/90 absolute right-4 bottom-4 rounded-md px-4 py-4 text-white transition">
-				Submit
-			</Button>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button className="mt-2 ml-auto" size="icon">
+								<SendHorizontal />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>
+							<p>Send message</p>
+						</TooltipContent>
+					</Tooltip>
+				</div>
+			</div>
 		</div>
 	);
 }

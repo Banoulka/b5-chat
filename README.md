@@ -32,3 +32,7 @@
 - Docker compose up
 
 `$ docker compose -f docker/docker-compose.yml up --build -d`
+
+### Known Bugs
+
+- [ ] Model select drop down not following system theme

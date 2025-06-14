@@ -103,10 +103,10 @@ const MessageDisplay = ({ message }: { message: MessageData }) => {
 		>
 			<p
 				className={cn(
-					'rounded p-2',
+					'rounded-2xl p-2',
 					message.type === 'user'
-						? 'w-fit max-w-[70%] bg-blue-200 dark:bg-blue-700/60 dark:text-blue-50'
-						: 'w-full bg-green-200 dark:bg-green-700/60 dark:text-green-50',
+						? 'bg-secondary w-fit max-w-[70%] dark:text-blue-50'
+						: 'w-full bg-transparent dark:text-green-50',
 				)}
 			>
 				{message.type === 'agent' ? <MarkdownDisplay markdown={message.content} /> : <p>{message.content}</p>}

@@ -25,9 +25,9 @@ export const Route = createRootRoute({
 							</AppSidebarInset>
 						</AppSidebar>
 					</AuthLoader>
-					<ReactQueryDevtools />
+					<ReactQueryDevtools buttonPosition="top-right" />
 				</QueryClientProvider>
-				<TanStackRouterDevtools position="bottom-right" />
+				<TanStackRouterDevtools position="top-right" />
 			</AuthProvider>
 		</>
 	),
