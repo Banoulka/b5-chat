@@ -1,7 +1,10 @@
+import type { Server } from 'bun';
 import { readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { env } from '../../env';
+import { requestHandler } from '../../paths/api/uploadthing';
 import { authHandler, getSession } from '../../service/auth';
+import { setCustomHeaders } from '../../utils/setCustomHeaders';
 import { NotFoundError } from '../ClientError';
 import { ClientResponse } from '../ClientResponse';
 import { applyMiddlewareToRequest, type Middleware } from '../middleware/core';
@@ -78,6 +81,13 @@ export const router = async () => {
 			}),
 	};
 
+	const uploadThingRoutes = {
+		'/api/uploadthing': (req: Bun.BunRequest<'/api/uploadthing'>, server: Server) => {
+			setCustomHeaders(req.headers);
+			return requestHandler(req, server);
+		},
+	};
+
 	const redirectHomeUrl = {
 		'/': (req: Bun.BunRequest<'/'>) =>
 			applyMiddlewareToRequest(req, [...globalMiddleware], async (req) => {
@@ -95,7 +105,7 @@ export const router = async () => {
 			}),
 	};
 
-	return { ...routeObj, ...authRoutes, ...notFoundRoute, ...redirectHomeUrl } as Routes;
+	return { ...routeObj, ...authRoutes, ...notFoundRoute, ...redirectHomeUrl, ...uploadThingRoutes } as Routes;
 };
 
 export const printRoutes = (routes: Routes) => {

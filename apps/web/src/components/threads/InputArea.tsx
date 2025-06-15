@@ -10,6 +10,7 @@ import type { useStream } from '@/hooks/use-stream';
 import { Button } from '../ui/button';
 import { Combobox } from '../ui/combobox';
 import { Textarea } from '../ui/textarea';
+import { UploadButton } from '../uploadthing';
 
 type MessageInputProps = {
 	threadId?: string;
@@ -63,6 +64,8 @@ const InputArea = ({ stream, threadId, onSendNewMessage }: MessageInputProps) =>
 					value={model}
 					onChange={setModel}
 				/>
+
+				<UploadButton endpoint="imageUploader" />
 
 				<Tooltip>
 					<TooltipTrigger asChild>

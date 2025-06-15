@@ -10,6 +10,8 @@ export type Session = {
 export type APIThreadMessage = {
 	id: string;
 	type: 'agent' | 'user';
+	contentType: 'text' | 'image';
+	model: string | null;
 	content: string;
 	createdAt: string;
 	updatedAt: string;
@@ -58,15 +60,6 @@ export interface ModelCard {
 export type API_ModelCatalogueResponse = {
 	models: ModelCard[];
 	defaultModel: string;
-};
-
-type MessageEvent = {
-	type: 'message';
-	content: string;
-};
-
-export type API_StreamEvent = {
-	type: 'message';
 };
 
 export const END_OF_TEXT_TOKEN = '<|endoftext|>';

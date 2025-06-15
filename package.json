@@ -1,27 +1,30 @@
 {
-	"name": "@b5-chat",
-	"private": true,
-	"packageManager": "bun@1.2.0",
-	"type": "module",
-	"devDependencies": {
-		"@types/bun": "latest",
-		"prettier": "^3.5.3",
-		"turbo": "^2.5.4",
-		"typescript": "^5.8.3"
-	},
-	"scripts": {
-		"dev": "turbo run dev --parallel",
-		"build": "turbo run build",
-		"lint": "turbo run lint",
-		"test": "turbo run test --parallel",
-		"format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\""
-	},
-	"workspaces": [
-		"apps/*",
-		"packages/*"
-	],
-	"trustedDependencies": [
-		"@tailwindcss/oxide",
-		"protobufjs"
-	]
+  "name": "@b5-chat",
+  "private": true,
+  "packageManager": "bun@1.2.0",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "prettier": "^3.5.3",
+    "turbo": "^2.5.4",
+    "typescript": "^5.8.3"
+  },
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test --parallel",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\""
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "trustedDependencies": [
+    "@tailwindcss/oxide",
+    "esbuild",
+    "msgpackr-extract",
+    "protobufjs",
+    "sharp"
+  ]
 }

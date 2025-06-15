@@ -36,6 +36,7 @@ export const runAgentForThread = async ({ model, threadId, userId }: RunAgentThr
 			threadId,
 			type: 'agent',
 			userId,
+			model: model,
 		});
 
 		emitter.removeEventListener('done', onDone);

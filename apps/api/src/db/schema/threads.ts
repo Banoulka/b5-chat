@@ -20,6 +20,8 @@ export const threads = pgTable(
 
 export const messageTypeEnum = pgEnum('type', ['agent', 'user']);
 
+export const contentTypeEnum = pgEnum('contentType', ['text', 'image']);
+
 export const messages = pgTable(
 	'message',
 	{
@@ -29,6 +31,7 @@ export const messages = pgTable(
 		sortId: serial().notNull(),
 		content: text('content').notNull(),
 		type: messageTypeEnum('type').notNull(),
+		contentType: contentTypeEnum('contentType').notNull().default('text'),
 		threadId: uuid('threadId')
 			.notNull()
 			.references(() => threads.id, { onDelete: 'cascade' }),
