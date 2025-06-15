@@ -1,37 +1,37 @@
 import { db } from '../../service/db';
-import { BadRequestError } from '../ClientError';
 import { getAgent } from './agent';
-import { isSupportedModel } from './models';
+import { type ModelId } from './models';
 
 const SYSTEM_PROMPT = `
 You are a helpful assistant. A conversation is provided in the following format: <user>Example User Content</user><assistant>Example Assistant Content</assistant>. Responses can be in text or markdown format. 
 `;
 
 type RunAgentThreadParams = {
-	model: string;
+	model: ModelId;
 	threadId: string;
 	userId: string;
 };
 
 export const runAgentForThread = async ({ model, threadId }: RunAgentThreadParams) => {
-	if (!isSupportedModel(model)) throw new BadRequestError('Model not supported');
-
 	const agent = getAgent(model);
 
 	const conversation = await getConversation(threadId);
 
-	const result = await agent.invoke([
-		{
-			role: 'system',
-			content: SYSTEM_PROMPT,
-		},
-		{
-			role: 'user',
-			content: conversation,
-		},
-	]);
+	console.log('conversation', agent, conversation);
 
-	return result;
+	throw new Error('Not implemented');
+	// const result = await agent.invoke([
+	// 	{
+	// 		role: 'system',
+	// 		content: SYSTEM_PROMPT,
+	// 	},
+	// 	{
+	// 		role: 'user',
+	// 		content: conversation,
+	// 	},
+	// ]);
+
+	// return result;
 };
 
 // TODO: Merge conversations together manually or pass as array?

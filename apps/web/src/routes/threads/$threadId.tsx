@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { api } from '@/components/auth/AuthContext';
-import MessageInput from '@/components/threads/MessageInput';
+import InputArea from '@/components/threads/InputArea';
 import MessageList, { type LocalMessage, type QueryTypeMessageData } from '@/components/threads/MessageList';
 import { getMessageOpts, getThreadOpts } from '@/hooks/queries';
 import { useSize } from '@/hooks/use-size';
@@ -118,12 +118,7 @@ function RouteComponent() {
 		<>
 			<MessageList key={threadId} bottomRefHeight={size.height} threadId={threadId} stream={stream} />
 			<div ref={sizeRef}>
-				<MessageInput
-					threadId={threadId}
-					key={threadId}
-					onSendNewMessage={handleSendNewMessage}
-					stream={stream}
-				/>
+				<InputArea threadId={threadId} key={threadId} onSendNewMessage={handleSendNewMessage} stream={stream} />
 			</div>
 		</>
 	);

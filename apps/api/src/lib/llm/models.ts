@@ -1,6 +1,8 @@
 import type { ModelCard } from '@b5-chat/common';
 
-export const defaultModels: ModelCard[] = [
+export const defaultModel = 'openai/gpt-4.1';
+
+export const defaultModels = [
 	{
 		id: 'openai/o3-pro',
 		canonical_slug: 'openai/o3-pro-2025-06-10',
@@ -121,8 +123,10 @@ export const defaultModels: ModelCard[] = [
 			modality: 'text+image->text',
 		},
 	},
-];
+] as const satisfies ModelCard[];
+
+export type ModelId = (typeof defaultModels)[number]['id'];
 
 const defaultModelIds = defaultModels.map((m) => m.id);
 
-export const isSupportedModel = (model: string) => defaultModelIds.includes(model);
+export const isSupportedModel = (model: unknown): model is ModelId => defaultModelIds.includes(model as any);

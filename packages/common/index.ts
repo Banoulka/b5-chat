@@ -55,4 +55,9 @@ export interface ModelCard {
 	};
 }
 
+export type API_ModelCatalogueResponse = {
+	models: ModelCard[];
+	defaultModel: string;
+};
+
 export const END_OF_TEXT_TOKEN = '<|endoftext|>';

@@ -1,4 +1,4 @@
-import type { API_ThreadsResponse, ModelCard } from '@b5-chat/common';
+import type { API_ModelCatalogueResponse, API_ThreadsResponse, ModelCard } from '@b5-chat/common';
 
 import { api } from '@/components/auth/AuthContext';
 
@@ -16,4 +16,9 @@ export const getMessageOpts = (threadId: string) => {
 	return {
 		queryKey: ['messages', threadId],
 	};
+};
+
+export const getModelCatalogueOpts = {
+	queryFn: () => api<API_ModelCatalogueResponse>('/agents'),
+	queryKey: ['model-catalogue'],
 };

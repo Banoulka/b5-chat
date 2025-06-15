@@ -35,6 +35,7 @@ export const messages = pgTable(
 		userId: uuid('userId')
 			.references(() => users.id, { onDelete: 'cascade' })
 			.default(sql`NULL`),
+		model: text('model'),
 		createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
 		updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow(),
 	},

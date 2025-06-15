@@ -1,4 +1,4 @@
-import type { Middleware } from '../middleware';
+import type { Middleware } from '../middleware/core';
 
 export const route = <TPath extends string>(
 	path: TPath,

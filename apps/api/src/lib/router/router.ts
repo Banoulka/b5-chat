@@ -4,7 +4,7 @@ import { env } from '../../env';
 import { authHandler, getSession } from '../../service/auth';
 import { NotFoundError } from '../ClientError';
 import { ClientResponse } from '../ClientResponse';
-import { applyMiddlewareToRequest, type Middleware } from '../middleware';
+import { applyMiddlewareToRequest, type Middleware } from '../middleware/core';
 import { errorHandler } from '../middleware/errors';
 import { logging } from '../middleware/logging';
 

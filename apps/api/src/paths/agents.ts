@@ -1,10 +1,9 @@
 import { ClientResponse } from '../lib/ClientResponse';
 import { fetchCatalogue } from '../lib/llm/catalogue';
+import { defaultModel } from '../lib/llm/models';
 import { route } from '../lib/router/route';
 
 // TODO: User preferences?
-const defaultModels = [];
-
 export const GET = route('/agents', async () => {
 	const catalogue = await fetchCatalogue();
 
@@ -14,5 +13,8 @@ export const GET = route('/agents', async () => {
 	);
 
 	// TODO: Add user preferences?
-	return ClientResponse.json(catalogue);
+	return ClientResponse.json({
+		models: catalogue,
+		defaultModel: defaultModel,
+	});
 });

@@ -12,6 +12,7 @@ services:
             - db_data:/var/lib/postgresql/data
         ports: ['4000:5432']
 
+    # FIXME: Fix docker composer so it hosts everything properly.
     # api:
     #     build:
     #         context: ..

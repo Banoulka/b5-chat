@@ -2,7 +2,10 @@ import { type API_ThreadMessagesResponse } from '@b5-chat/common';
 import { resolve } from 'path';
 import z from 'zod';
 import { messages } from '../../db/schema';
+import { BadRequestError } from '../../lib/ClientError';
 import { ClientResponse } from '../../lib/ClientResponse';
+import { isSupportedModel } from '../../lib/llm/models';
+import { runAgentForThread } from '../../lib/llm/runAgentForThread';
 import { auth } from '../../lib/middleware/auth';
 import { route } from '../../lib/router/route';
 import { deleteStreamSession, getEmitter, getStreamSessionContent } from '../../lib/stream';
@@ -48,6 +51,7 @@ export const GET = route(
 
 const createMessageSchema = z.object({
 	content: z.string().trim().min(1, 'Content is required'),
+	modelId: z.string().trim().min(1, 'Model ID is required'),
 });
 
 export const POST = route(
@@ -64,6 +68,10 @@ export const POST = route(
 		if (!parsed.success)
 			return ClientResponse.json({ errors: parsed.error.flatten().fieldErrors }, { status: 400 });
 
+		const { modelId, content } = parsed.data;
+
+		if (!isSupportedModel(modelId)) throw new BadRequestError('Model not supported');
+
 		// TODO: thread ownerships
 		const thread = await db.query.threads.findFirst({
 			where: (threads, { eq }) => eq(threads.id, req.params.threadId),
@@ -74,7 +82,7 @@ export const POST = route(
 		const message = await db
 			.insert(messages)
 			.values({
-				content: parsed.data.content,
+				content: content,
 				threadId: req.params.threadId,
 				type: 'user',
 				userId: session.user.id,
@@ -90,7 +98,12 @@ export const POST = route(
 			});
 
 		// Kick off the stream in the background
-		startTestStream(`thread-${req.params.threadId}`);
+		// startTestStream(`thread-${req.params.threadId}`);
+		runAgentForThread({
+			model: modelId,
+			threadId: req.params.threadId,
+			userId: session.user.id,
+		});
 
 		return ClientResponse.json({
 			data: message[0],

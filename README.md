@@ -4,7 +4,7 @@
 
 - [ ] Chats and converations
 - [ ] Multiple models & providers to choose from
-- [ ] Auth users
+- [x] Auth users
 - [ ] Easy to setup and try
 
 ## Bonus features
@@ -12,7 +12,7 @@
 - [ ] Attachment support (plus model guards)
 - [ ] Image-generation support (plus models)
 - [ ] Syntax code highlighting
-- [ ] Resumable streams (continue gen after page refresh)
+- [x] Resumable streams (continue gen after page refresh)
 - [ ] Chat branching (alternative conversation paths plus ui)
 - [ ] Chat sharing (share chat with link + anonymous)
 - [ ] Web search (plus model guard)
@@ -35,4 +35,6 @@
 
 ### Known Bugs
 
-- [ ] Model select drop down not following system theme
+- [x] Model select drop down not following system theme
+- [ ] Flashing when resizing text input area (probs due to resize ref thing. need to find fix for this, maybe floating fixed input bar at bottom plus bottom padding on message list instead?) 
+- [ ] API strange auth errors on hot reload restart 

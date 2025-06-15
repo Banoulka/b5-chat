@@ -1,4 +1,4 @@
-import type { Middleware } from '.';
+import type { Middleware } from './core';
 
 const colors = {
 	reset: '\x1b[0m',
