@@ -26,7 +26,6 @@ A table:
 console.log('test', test);
 
 const MarkdownDisplay = ({ markdown }: { markdown: string }) => {
-	console.log('markdown', markdown);
 	return (
 		<div className="markdown-components contents">
 			<ReactMarkdown

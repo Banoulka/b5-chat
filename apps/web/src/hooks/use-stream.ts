@@ -43,6 +43,7 @@ export const useStream = ({ url, id, onComplete }: UseStreamOptions) => {
 		eventSourceRef.current = newSource;
 		newSource.onmessage = (e) =>
 			setTokens((prev) => {
+				console.log('got stuff', e);
 				console.log(`got message "${e.data}"`, e.data.length);
 
 				if (e.data === END_OF_TEXT_TOKEN || e.data.includes(END_OF_TEXT_TOKEN)) {

@@ -101,7 +101,7 @@ const MessageDisplay = ({ message }: { message: MessageData }) => {
 			className="m-2 mx-auto flex w-[70%] flex-col items-end"
 			key={message.type === 'local' ? message.localId : message.id}
 		>
-			<p
+			<div
 				className={cn(
 					'rounded-2xl p-2',
 					message.type === 'user'
@@ -110,7 +110,7 @@ const MessageDisplay = ({ message }: { message: MessageData }) => {
 				)}
 			>
 				{message.type === 'agent' ? <MarkdownDisplay markdown={message.content} /> : <p>{message.content}</p>}
-			</p>
+			</div>
 		</div>
 	);
 };

@@ -1,4 +1,4 @@
-import { type RefObject, useLayoutEffect, useState } from 'react';
+import { type RefObject, useCallback, useRef, useState } from 'react';
 
 interface Options {
 	defaultSize?: Size;
@@ -9,8 +9,10 @@ interface Size {
 	height: number;
 }
 
-export function useSize(ref: RefObject<HTMLDivElement | null>, options: Options = {}): Size {
+export function useSize(ref: RefObject<HTMLDivElement | null>, options: Options = {}) {
 	const { defaultSize = { height: 0, width: 0 } } = options;
+
+	const resizeRef = useRef<ResizeObserver | null>(null);
 
 	const [size, setSize] = useState<Size>(() => {
 		const el = ref.current;
@@ -18,22 +20,21 @@ export function useSize(ref: RefObject<HTMLDivElement | null>, options: Options 
 		return defaultSize;
 	});
 
-	useLayoutEffect(() => {
-		console.log('useLayoutEffect useSize', ref.current);
-		const el = ref.current;
-		if (!el) return;
+	const sizeRef = useCallback((node: HTMLDivElement) => {
+		if (!node) return;
+
+		if (resizeRef.current) resizeRef.current.disconnect();
 
 		const update = () => {
-			setSize({ height: el.offsetHeight, width: el.offsetWidth });
+			setSize({ height: node.offsetHeight, width: node.offsetWidth });
 		};
 
 		update();
 
 		const resizeObserver = new ResizeObserver(update);
-		resizeObserver.observe(el);
+		resizeObserver.observe(node);
+		resizeRef.current = resizeObserver;
+	}, []);
 
-		return () => resizeObserver.disconnect();
-	}, [ref, ref?.current]);
-
-	return size;
+	return { size, sizeRef };
 }

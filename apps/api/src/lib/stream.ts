@@ -23,20 +23,21 @@ export const getEmitter = (id: string) => {
 	sessions.set(id, session);
 
 	emitter.addEventListener('token', (e: any) => {
+		console.log('getEmitter token', JSON.stringify(e.detail));
 		const { token, idx } = e.detail;
-		if (token) {
-			session.tokens.push({ token, idx });
-		}
+		if (token) session.tokens.push({ token, idx });
 	});
 
+	// fires first, notifies everywhere that we are done streaming.
 	emitter.addEventListener('done', () => {
+		console.log('getEmitter done');
 		session.done = true;
 	});
 
 	return emitter;
 };
 
-export const getSessionContent = (id: string) => {
+export const getStreamSessionContent = (id: string) => {
 	const session = sessions.get(id);
 
 	if (!session) return null;
@@ -45,6 +46,10 @@ export const getSessionContent = (id: string) => {
 		.map((t) => t.token)
 		.join('')
 		.replace(END_OF_TEXT_TOKEN, '');
+};
+
+export const deleteStreamSession = (id: string) => {
+	sessions.delete(id);
 };
 
 export const hasSession = (id: string) => {
@@ -69,21 +74,25 @@ export const streamSession = (id: string, from: number) => {
 
 			// live follow
 			const h = (e: any) => {
-				const { token, idx, done } = e.detail;
+				console.log('live follow token', JSON.stringify(e.detail));
+				const { token, idx } = e.detail;
 				if (token && idx >= from) {
 					ctrl.enqueue(frameEncode(token, idx));
 				}
-				if (done) ctrl.close();
 			};
 			const d = () => {
+				ctrl.enqueue(`id:null\ndata:${END_OF_TEXT_TOKEN}\n\n`);
+
 				console.log('ReadableStream closed because session is done');
 				ctrl.close();
-				sessions.delete(id);
+
+				session.emitter.removeEventListener('token', h);
+				session.emitter.removeEventListener('done', d);
 			};
 			tokenHandler = h;
 			doneHandler = d;
 			session.emitter.addEventListener('token', h);
-			session.emitter.addEventListener('done', d);
+			session.emitter.addEventListener('done', d); // fires last, if there is any live listener, cancel and reset
 		},
 		cancel() {
 			console.log('ReadableStream cancelled. Removing handlers');

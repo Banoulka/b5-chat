@@ -99,7 +99,7 @@ function RouteComponent() {
 		url: `/threads/${threadId}/stream`,
 	});
 
-	const size = useSize(bottomRef, { defaultSize: { height: 100, width: 0 } });
+	const { size, sizeRef } = useSize(bottomRef, { defaultSize: { height: 100, width: 0 } });
 
 	if (error) return <div>Error: {error.message}</div>;
 	if (isLoading) return <div>Loading...</div>;
@@ -114,7 +114,7 @@ function RouteComponent() {
 	return (
 		<>
 			<MessageList key={threadId} bottomRefHeight={size.height} threadId={threadId} stream={stream} />
-			<div ref={bottomRef}>
+			<div ref={sizeRef}>
 				<MessageInput threadId={threadId} key={threadId} onSendNewMessage={handleSendNewMessage} />
 			</div>
 		</>

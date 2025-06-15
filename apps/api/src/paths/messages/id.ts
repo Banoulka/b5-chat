@@ -1,10 +1,10 @@
-import { END_OF_TEXT_TOKEN, type API_ThreadMessagesResponse } from '@b5-chat/common';
+import { type API_ThreadMessagesResponse } from '@b5-chat/common';
 import { resolve } from 'path';
 import z from 'zod';
 import { messages } from '../../db/schema';
 import { ClientResponse } from '../../lib/ClientResponse';
 import { route } from '../../lib/router/route';
-import { getEmitter, getSessionContent } from '../../lib/stream';
+import { deleteStreamSession, getEmitter, getStreamSessionContent } from '../../lib/stream';
 import { auth } from '../../middleware/auth';
 import { getSession } from '../../service/auth';
 import { db } from '../../service/db';
@@ -106,7 +106,7 @@ const startTestStream = async (id: string) => {
 		console.log('Streaming finished for thread', id);
 
 		// create a new agent message with the content of the stream
-		const content = getSessionContent(id);
+		const content = getStreamSessionContent(id);
 		if (!content) {
 			console.error('No content found for session', id);
 			return;
@@ -121,6 +121,7 @@ const startTestStream = async (id: string) => {
 		});
 
 		emitter.removeEventListener('done', onDone);
+		deleteStreamSession(id);
 	};
 	emitter.addEventListener('done', onDone);
 
@@ -141,7 +142,6 @@ const startTestStream = async (id: string) => {
 				const chunk = fileText.slice(i * chunkSize, (i + 1) * chunkSize);
 				controller.enqueue(chunk);
 
-				console.log(`dispatching event: ${i}`, chunk);
 				// Emit event for each token
 				emitter.dispatchEvent(
 					new CustomEvent('token', {
@@ -154,21 +154,12 @@ const startTestStream = async (id: string) => {
 				);
 			}
 
-			// Emit final done token event
-			emitter.dispatchEvent(
-				new CustomEvent('token', {
-					detail: {
-						token: END_OF_TEXT_TOKEN,
-						idx: totalChunks,
-						done: true,
-					},
-				}),
-			);
-
 			// Emit separate done event so external listeners can react when the stream is fully finished
 			emitter.dispatchEvent(new Event('done'));
 
 			controller.close();
+
+			console.log('readable stream done?');
 		},
 		async cancel() {
 			console.log('cancel');
