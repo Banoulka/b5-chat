@@ -28,10 +28,36 @@ export const useStream = ({ url, id, onComplete }: UseStreamOptions) => {
 		};
 	}, [key]);
 
+	const handleToken = useCallback(
+		(e: MessageEvent) =>
+			setTokens((prev) => {
+				console.log('got stuff', e);
+				// console.log(`got message "${e.data}"`, e.data.length);
+
+				console.log('end of text?', e.data === END_OF_TEXT_TOKEN || e.data.includes(END_OF_TEXT_TOKEN));
+				if (e.data === END_OF_TEXT_TOKEN || e.data.includes(END_OF_TEXT_TOKEN)) {
+					stop();
+					localStorage.removeItem(key); // we are done we no more need
+					onComplete?.();
+					return prev;
+				}
+
+				const next = prev + e.data;
+				localStorage.setItem(key, next);
+				return next;
+			}),
+		[],
+	);
+
 	const stop = useCallback(() => {
 		console.log('use-stream: stop');
-		eventSourceRef.current?.close();
-		eventSourceRef.current = null;
+
+		if (eventSourceRef.current) {
+			eventSourceRef.current.removeEventListener('token', handleToken);
+			eventSourceRef.current.close();
+			eventSourceRef.current = null;
+		}
+
 		setIsStreaming(false);
 		setTokens('');
 	}, [key]);
@@ -54,23 +80,7 @@ export const useStream = ({ url, id, onComplete }: UseStreamOptions) => {
 		setIsStreaming(true);
 		const newSource = new EventSource(`${env.VITE_API_URL}${url}?from=${tokens.length}`);
 		eventSourceRef.current = newSource;
-		newSource.onmessage = (e) =>
-			setTokens((prev) => {
-				// console.log('got stuff', e);
-				// console.log(`got message "${e.data}"`, e.data.length);
-
-				console.log('end of text?', e.data === END_OF_TEXT_TOKEN || e.data.includes(END_OF_TEXT_TOKEN));
-				if (e.data === END_OF_TEXT_TOKEN || e.data.includes(END_OF_TEXT_TOKEN)) {
-					stop();
-					localStorage.removeItem(key); // we are done we no more need
-					onComplete?.();
-					return prev;
-				}
-
-				const next = prev + e.data;
-				localStorage.setItem(key, next);
-				return next;
-			});
+		newSource.addEventListener('token', handleToken);
 	}, [url, tokens.length, stop]);
 
 	const tryResume = useCallback(async () => {

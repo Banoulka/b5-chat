@@ -60,4 +60,13 @@ export type API_ModelCatalogueResponse = {
 	defaultModel: string;
 };
 
+type MessageEvent = {
+	type: 'message';
+	content: string;
+};
+
+export type API_StreamEvent = {
+	type: 'message';
+};
+
 export const END_OF_TEXT_TOKEN = '<|endoftext|>';

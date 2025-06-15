@@ -81,7 +81,8 @@ export const streamSession = (id: string, from: number) => {
 				}
 			};
 			const d = () => {
-				ctrl.enqueue(`id:null\ndata:${END_OF_TEXT_TOKEN}\n\n`);
+				// TODO: Change to custom done event
+				ctrl.enqueue(`id:null\nevent:token\ndata:${END_OF_TEXT_TOKEN}\n\n`);
 
 				console.log('ReadableStream closed because session is done');
 				ctrl.close();
@@ -114,5 +115,5 @@ const frameEncode = (token: string, id: number) => {
 	// if (token === '\n') return `id:${id}\ndata:\n\n`;
 
 	// preserve new lines inside token (by sending multiple data lines)
-	return `id:${id}\ndata:${token.replace(/\r?\n/g, '\ndata:')}\n\n`;
+	return `id:${id}\nevent:token\ndata:${token.replace(/\r?\n/g, '\ndata:')}\n\n`;
 };

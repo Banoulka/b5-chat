@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import { getMessageOpts } from '@/hooks/queries';
 import { useScrollContainer } from '@/hooks/use-scroll-container';
 import { useStream } from '@/hooks/use-stream';
+import { mergeRefs } from '@/lib/merge-refs';
 import { cn } from '@/lib/utils';
 
 import { api } from '../auth/AuthContext';
@@ -15,6 +16,7 @@ type Props = {
 	bottomRefHeight: number;
 	threadId: string;
 	stream: ReturnType<typeof useStream>;
+	ref?: React.RefObject<HTMLDivElement | null>;
 };
 
 export type LocalMessage = {
@@ -29,7 +31,7 @@ type MessageData = API_ThreadMessagesResponse['data'][number] | LocalMessage;
 
 const SCROLL_THRESHOLD = 70;
 
-const MessageList = ({ bottomRefHeight, threadId, stream }: Props) => {
+const MessageList = ({ bottomRefHeight, threadId, stream, ref }: Props) => {
 	const { data, isFetching, isFetchPreviousPageError, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
 		useInfiniteQuery<QueryTypeMessageData>({
 			getNextPageParam: (lastPage) => lastPage?.meta?.nextCursor,
@@ -56,11 +58,13 @@ const MessageList = ({ bottomRefHeight, threadId, stream }: Props) => {
 		return [...data.pages].reverse().flatMap((page) => [...page.data].reverse());
 	}, [data]);
 
+	const mergedRefs = useMemo(() => mergeRefs([scrollRef, ref]), [scrollRef, ref]);
+
 	return (
 		<div
 			style={{ height: `calc(100vh - ${bottomRefHeight}px)` }}
 			className="bg-secondary dark:bg-background flex h-full w-full flex-col overflow-y-auto pb-4"
-			ref={scrollRef}
+			ref={mergedRefs}
 		>
 			{isFetchPreviousPageError && <div>Error</div>}
 			{isFetching &&

@@ -23,4 +23,5 @@ export const getAgent = (model: string) =>
 				'X-Title': 'B5-Chat',
 			},
 		},
+		// TODO: Options like max tokens? etc
 	});

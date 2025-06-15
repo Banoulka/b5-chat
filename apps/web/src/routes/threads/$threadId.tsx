@@ -31,12 +31,12 @@ function RouteComponent() {
 	const { mutateAsync: sendMessage } = useMutation<
 		unknown,
 		unknown,
-		string,
+		{ content: string; modelId: string },
 		{ previousData: InfiniteData<QueryTypeMessageData> | undefined }
 	>({
-		mutationFn: (content: string) =>
+		mutationFn: ({ content, modelId }) =>
 			api(`/threads/${threadId}/messages`, {
-				body: JSON.stringify({ content }),
+				body: JSON.stringify({ content: content, modelId }),
 				method: 'POST',
 			}),
 		onError: (_err, _variables, context) => {
@@ -44,7 +44,7 @@ function RouteComponent() {
 			if (context?.previousData)
 				queryClient.setQueryData(getMessageOpts(threadId).queryKey, context.previousData);
 		},
-		onMutate: async (content) => {
+		onMutate: async ({ content }) => {
 			await queryClient.cancelQueries(getMessageOpts(threadId));
 
 			const previousData = queryClient.getQueryData<InfiniteData<QueryTypeMessageData>>(
@@ -103,20 +103,28 @@ function RouteComponent() {
 	});
 
 	const { size, sizeRef } = useSize(bottomRef, { defaultSize: { height: 100, width: 0 } });
+	const messageListRef = useRef<HTMLDivElement>(null);
 
 	if (error) return <div>Error: {error.message}</div>;
 	if (isLoading) return <div>Loading...</div>;
 	if (!thread) return <div>Not found</div>;
 
-	const handleSendNewMessage = async (content: string) => {
-		await sendMessage(content);
+	const handleSendNewMessage = async (content: string, modelId: string) => {
+		await sendMessage({ content, modelId });
 
 		stream.controls.start();
-	};
 
+		if (messageListRef.current) messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
+	};
 	return (
 		<>
-			<MessageList key={threadId} bottomRefHeight={size.height} threadId={threadId} stream={stream} />
+			<MessageList
+				ref={messageListRef}
+				key={threadId}
+				bottomRefHeight={size.height}
+				threadId={threadId}
+				stream={stream}
+			/>
 			<div ref={sizeRef}>
 				<InputArea threadId={threadId} key={threadId} onSendNewMessage={handleSendNewMessage} stream={stream} />
 			</div>
