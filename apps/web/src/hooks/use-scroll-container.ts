@@ -16,7 +16,8 @@ export const useScrollContainer = ({
 	onReachBottom,
 }: UseScrollContainerProps) => {
 	const containerRef = useRef<HTMLDivElement>(null);
-	const isAtBottomRef = useRef(false);
+	const isAtBottomRef = useRef(true);
+	const isAtTopRef = useRef(true);
 
 	const scrollToBottom = () => {
 		if (containerRef.current) {
@@ -46,22 +47,19 @@ export const useScrollContainer = ({
 			const scrollTop = target.scrollTop;
 
 			const nearTop = scrollTop < threshold;
-			if (nearTop) {
-				onReachTop?.();
-			}
+			if (nearTop) onReachTop?.();
 
 			const nearBottom = scrollTop + threshold + target.clientHeight >= target.scrollHeight;
-			if (nearBottom) {
-				onReachBottom?.();
-			}
+			if (nearBottom) onReachBottom?.();
 
 			// track bottom status
 			isAtBottomRef.current = nearBottom;
+			isAtTopRef.current = nearTop;
 		};
 
 		el.addEventListener('scroll', handleScroll);
 		return () => el.removeEventListener('scroll', handleScroll);
 	}, [threshold, onReachTop, onReachBottom]);
 
-	return { containerRef, isAtBottomRef, scrollToBottom } as const;
+	return { containerRef, isAtBottomRef, isAtTopRef, scrollToBottom } as const;
 };

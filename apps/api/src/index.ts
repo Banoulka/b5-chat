@@ -10,7 +10,7 @@ printRoutes(routes);
 const server = Bun.serve({
 	port: env.PORT,
 	hostname: '0.0.0.0',
-	development: true,
+	development: !import.meta.env.NODE_ENV || import.meta.env.NODE_ENV === 'development',
 	// websocket: {
 	// 	open: (ws) => {
 	// 		console.log('WebSocket opened');

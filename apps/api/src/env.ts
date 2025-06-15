@@ -13,6 +13,7 @@ export const env = createEnv({
 
 		OPENAI_API_KEY: z.string().min(1),
 		TAVILY_API_KEY: z.string().min(1),
+		OPENROUTER_API_KEY: z.string().min(1),
 	},
 	runtimeEnv: process.env,
 });

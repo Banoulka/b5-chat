@@ -1,6 +1,6 @@
 import { type InfiniteData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { api } from '@/components/auth/AuthContext';
@@ -17,6 +17,7 @@ export const Route = createFileRoute('/threads/$threadId')({
 function RouteComponent() {
 	const { threadId } = Route.useParams();
 	const queryClient = useQueryClient();
+	const [selectedModel, setSelectedModel] = useState<string | null>(null);
 
 	const {
 		data: thread,

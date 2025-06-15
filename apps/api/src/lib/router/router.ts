@@ -1,10 +1,12 @@
 import { readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { env } from '../../env';
-import { applyMiddlewareToRequest, type Middleware } from '../../middleware';
-import { logging } from '../../middleware/logging';
 import { authHandler, getSession } from '../../service/auth';
+import { NotFoundError } from '../ClientError';
 import { ClientResponse } from '../ClientResponse';
+import { applyMiddlewareToRequest, type Middleware } from '../middleware';
+import { errorHandler } from '../middleware/errors';
+import { logging } from '../middleware/logging';
 
 console.log('Web URL', env.WEB_URL);
 
@@ -29,7 +31,7 @@ type ImportedModule = {
 
 export type Routes = Record<string, Partial<Record<Method, (req: Bun.BunRequest<string>) => Promise<Response>>>>;
 
-const globalMiddleware: Middleware[] = [logging];
+const globalMiddleware: Middleware[] = [logging, errorHandler];
 
 export const router = async () => {
 	// load all files in the paths folder
@@ -88,9 +90,9 @@ export const router = async () => {
 
 	const notFoundRoute = {
 		'/**': (req: Bun.BunRequest<string>) =>
-			applyMiddlewareToRequest(req, [...globalMiddleware], async () =>
-				ClientResponse.json({ error: 'Not Found' }, { status: 404 }),
-			),
+			applyMiddlewareToRequest(req, [...globalMiddleware], async () => {
+				throw new NotFoundError('Not Found');
+			}),
 	};
 
 	return { ...routeObj, ...authRoutes, ...notFoundRoute, ...redirectHomeUrl } as Routes;

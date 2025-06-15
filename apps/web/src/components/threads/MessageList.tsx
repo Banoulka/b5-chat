@@ -40,7 +40,7 @@ const MessageList = ({ bottomRefHeight, threadId, stream }: Props) => {
 			...getMessageOpts(threadId),
 		});
 
-	const { containerRef: scrollRef } = useScrollContainer({
+	const { containerRef: scrollRef, isAtTopRef } = useScrollContainer({
 		anchorBottomDeps: [bottomRefHeight],
 		isLoading,
 		onReachTop: () => {
@@ -64,7 +64,7 @@ const MessageList = ({ bottomRefHeight, threadId, stream }: Props) => {
 		>
 			{isFetchPreviousPageError && <div>Error</div>}
 			{isFetching &&
-				hasNextPage &&
+				isAtTopRef.current &&
 				new Array(10).fill(0).map((_, index) => (
 					<div key={index} className="m-2 mx-auto flex w-[70%] flex-col items-end">
 						<Skeleton className={cn('bg-muted dark:bg-muted/40 m-2 flex w-full flex-col rounded p-4')} />

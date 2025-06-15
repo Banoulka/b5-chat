@@ -1,7 +1,7 @@
 import type { API_ThreadsResponse } from '@b5-chat/common';
 import { ClientResponse } from '../lib/ClientResponse';
+import { auth } from '../lib/middleware/auth';
 import { route } from '../lib/router/route';
-import { auth } from '../middleware/auth';
 import { db } from '../service/db';
 
 export const GET = route(

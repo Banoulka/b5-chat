@@ -41,6 +41,18 @@ export type API_ThreadMessagesResponse = {
 
 // LLM
 export type Capability = 'tools' | 'web' | 'image' | 'file';
-export type ModelCard = { id: string; name: string; desc: string; supported: Capability[] };
+
+export type ModelModality = 'text->text' | 'text+image->text';
+
+export interface ModelCard {
+	id: string;
+	canonical_slug: string;
+	name: string;
+	context_length: number;
+	supported_parameters: string[];
+	architecture: {
+		modality: ModelModality;
+	};
+}
 
 export const END_OF_TEXT_TOKEN = '<|endoftext|>';

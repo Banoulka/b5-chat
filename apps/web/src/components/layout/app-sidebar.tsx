@@ -5,7 +5,7 @@ import {
 	DropdownMenuTrigger,
 } from '@radix-ui/react-dropdown-menu';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from '@tanstack/react-router';
+import { Link, useParams } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 
 import {
@@ -17,7 +17,6 @@ import {
 	SidebarGroupLabel,
 	SidebarHeader,
 	SidebarMenuButton,
-	SidebarMenuItem,
 	SidebarProvider,
 	SidebarRail,
 	SidebarTrigger,
@@ -28,6 +27,8 @@ import { useAuth } from '../auth/AuthContext';
 
 export function AppSidebar({ children }: { children: React.ReactNode }) {
 	const { session, isSignedIn } = useAuth();
+	const params = useParams({ from: '/threads/$threadId', shouldThrow: false });
+	console.log('threadId', params?.threadId);
 
 	const { data: agents } = useQuery(getAgentOpts);
 	const { data: threads } = useQuery(getThreadOpts);
@@ -68,6 +69,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 									params={{ threadId: thread.id }}
 									key={thread.id}
 								>
+									{params?.threadId === thread.id ? '> ' : ''}
 									{thread.name}
 								</Link>
 							))}
@@ -77,29 +79,23 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
 				<SidebarFooter>
 					<SidebarContent>
-						<SidebarMenuItem>
-							<DropdownMenu>
-								<DropdownMenuTrigger asChild>
-									<SidebarMenuButton>{isSignedIn ? session.user.name : 'Account'}</SidebarMenuButton>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent>
-									<DropdownMenuItem>
-										<span>
-											<Link to="/settings">Settings</Link>
-										</span>
-									</DropdownMenuItem>
-									<DropdownMenuItem>
-										<span>
-											{isSignedIn ? (
-												<Link to="/logout">Logout</Link>
-											) : (
-												<Link to="/login">Login</Link>
-											)}
-										</span>
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
-						</SidebarMenuItem>
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<SidebarMenuButton>{isSignedIn ? session.user.name : 'Account'}</SidebarMenuButton>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent>
+								<DropdownMenuItem>
+									<span>
+										<Link to="/settings">Settings</Link>
+									</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem>
+									<span>
+										{isSignedIn ? <Link to="/logout">Logout</Link> : <Link to="/login">Login</Link>}
+									</span>
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
 					</SidebarContent>
 				</SidebarFooter>
 				<SidebarRail />
