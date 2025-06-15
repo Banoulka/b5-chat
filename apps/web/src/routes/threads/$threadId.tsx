@@ -93,6 +93,8 @@ function RouteComponent() {
 	const stream = useStream({
 		id: threadId,
 		onComplete: () => {
+			// TODO: Fix the "Flashing" issue when the agent message is added to the query data
+			// and simultaneously removes the streaming message.
 			// invalidate the messages query. (should fetch the new agent message properly?)
 			queryClient.invalidateQueries(getMessageOpts(threadId));
 		},
@@ -115,7 +117,12 @@ function RouteComponent() {
 		<>
 			<MessageList key={threadId} bottomRefHeight={size.height} threadId={threadId} stream={stream} />
 			<div ref={sizeRef}>
-				<MessageInput threadId={threadId} key={threadId} onSendNewMessage={handleSendNewMessage} />
+				<MessageInput
+					threadId={threadId}
+					key={threadId}
+					onSendNewMessage={handleSendNewMessage}
+					stream={stream}
+				/>
 			</div>
 		</>
 	);

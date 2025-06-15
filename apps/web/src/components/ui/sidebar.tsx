@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSidebarResize } from '@/hooks/use-sidebar-resize';
-import { mergeButtonRefs } from '@/lib/merge-button-refs';
+import { mergeRefs } from '@/lib/merge-refs';
 import { cn } from '@/lib/utils';
 
 const SIDEBAR_STORAGE_KEY = 'sidebar:state';
@@ -345,7 +345,7 @@ const SidebarRail = React.forwardRef<
 	});
 
 	//* Merge external ref with our dragRef
-	const combinedRef = React.useMemo(() => mergeButtonRefs([ref, dragRef]), [ref, dragRef]);
+	const combinedRef = React.useMemo(() => mergeRefs([ref, dragRef]), [ref, dragRef]);
 
 	return (
 		<button

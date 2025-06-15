@@ -29,13 +29,26 @@ export const useStream = ({ url, id, onComplete }: UseStreamOptions) => {
 	}, [key]);
 
 	const stop = useCallback(() => {
+		console.log('use-stream: stop');
 		eventSourceRef.current?.close();
 		eventSourceRef.current = null;
 		setIsStreaming(false);
+		setTokens('');
+	}, [key]);
+
+	const cancel = useCallback(async () => {
+		console.log('use-stream: cancel');
+
+		stop();
+
+		// fire network request to tell the server to stop streaming the response.
+		await fetch(`${env.VITE_API_URL}${url}`, {
+			method: 'DELETE',
+		});
 	}, [key]);
 
 	const start = useCallback(() => {
-		console.log('starting stream', eventSourceRef.current);
+		console.log('use-stream: start', eventSourceRef.current, tokens.length);
 		if (eventSourceRef.current) return;
 
 		setIsStreaming(true);
@@ -43,9 +56,10 @@ export const useStream = ({ url, id, onComplete }: UseStreamOptions) => {
 		eventSourceRef.current = newSource;
 		newSource.onmessage = (e) =>
 			setTokens((prev) => {
-				console.log('got stuff', e);
-				console.log(`got message "${e.data}"`, e.data.length);
+				// console.log('got stuff', e);
+				// console.log(`got message "${e.data}"`, e.data.length);
 
+				console.log('end of text?', e.data === END_OF_TEXT_TOKEN || e.data.includes(END_OF_TEXT_TOKEN));
 				if (e.data === END_OF_TEXT_TOKEN || e.data.includes(END_OF_TEXT_TOKEN)) {
 					stop();
 					localStorage.removeItem(key); // we are done we no more need
@@ -93,5 +107,5 @@ export const useStream = ({ url, id, onComplete }: UseStreamOptions) => {
 		};
 	}, [id]);
 
-	return { controls: { canStop, start, stop, tryResume }, isStreaming, tokens };
+	return { controls: { canStop, cancel, start, tryResume }, isStreaming, tokens };
 };

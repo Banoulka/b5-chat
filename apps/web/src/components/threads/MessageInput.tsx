@@ -3,6 +3,7 @@ import { SendHorizontal } from 'lucide-react';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import type { useStream } from '@/hooks/use-stream';
 
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
@@ -11,9 +12,10 @@ type MessageInputProps = {
 	threadId?: string;
 	ref?: React.RefObject<HTMLDivElement>;
 	onSendNewMessage?: (content: string) => void;
+	stream: ReturnType<typeof useStream>;
 };
 
-const MessageInput = ({ threadId, onSendNewMessage }: MessageInputProps) => {
+const MessageInput = ({ stream, threadId, onSendNewMessage }: MessageInputProps) => {
 	const [content, setContent] = useLocalStorage(`last-input-${threadId}`, '');
 
 	const handleSend = () => {
@@ -45,7 +47,7 @@ const MessageInput = ({ threadId, onSendNewMessage }: MessageInputProps) => {
 
 				<Tooltip>
 					<TooltipTrigger asChild>
-						<Button className="mt-2 ml-auto" size="icon" onClick={handleSend}>
+						<Button disabled={stream.isStreaming} className="mt-2 ml-auto" size="icon" onClick={handleSend}>
 							<SendHorizontal />
 						</Button>
 					</TooltipTrigger>

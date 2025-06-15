@@ -22,3 +22,11 @@ export const GET = route('/threads/:threadId/stream', async (req) => {
 
 	return streamSession(sessionId, clampedFrom);
 });
+
+export const DELETE = route('/threads/:threadId/stream', async (req) => {
+	const sessionId = `thread-${req.params.threadId}`;
+
+	// TODO: Somehow cancel the stream etc.
+
+	return ClientResponse.json({ message: 'Session deleted' }, { status: 200 });
+});

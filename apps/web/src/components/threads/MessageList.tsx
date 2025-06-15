@@ -1,8 +1,9 @@
 import type { API_ThreadMessagesResponse } from '@b5-chat/common';
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
-import { useEffect, useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 
 import { getMessageOpts } from '@/hooks/queries';
+import { useScrollContainer } from '@/hooks/use-scroll-container';
 import { useStream } from '@/hooks/use-stream';
 import { cn } from '@/lib/utils';
 
@@ -26,12 +27,10 @@ export type QueryTypeMessageData = Omit<API_ThreadMessagesResponse, 'data'> & { 
 
 type MessageData = API_ThreadMessagesResponse['data'][number] | LocalMessage;
 
-const SCROLL_THRESHOLD = 50;
+const SCROLL_THRESHOLD = 70;
 
 const MessageList = ({ bottomRefHeight, threadId, stream }: Props) => {
-	const scrollRef = useRef<HTMLDivElement>(null);
-
-	const { data, isFetching, isFetchPreviousPageError, fetchNextPage, hasNextPage, isFetchingNextPage } =
+	const { data, isFetching, isFetchPreviousPageError, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
 		useInfiniteQuery<QueryTypeMessageData>({
 			getNextPageParam: (lastPage) => lastPage?.meta?.nextCursor,
 			initialPageParam: undefined,
@@ -41,54 +40,45 @@ const MessageList = ({ bottomRefHeight, threadId, stream }: Props) => {
 			...getMessageOpts(threadId),
 		});
 
+	const { containerRef: scrollRef } = useScrollContainer({
+		anchorBottomDeps: [bottomRefHeight],
+		isLoading,
+		onReachTop: () => {
+			if (hasNextPage && !isFetchingNextPage) {
+				fetchNextPage();
+			}
+		},
+		threshold: SCROLL_THRESHOLD,
+	});
+
 	const flatPages = useMemo(() => {
 		if (!data) return [];
 		return [...data.pages].reverse().flatMap((page) => [...page.data].reverse());
 	}, [data]);
-
-	const scrollToBottom = () => {
-		if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-	};
-
-	useEffect(() => {
-		// console.log('hasFirstPageLoaded', hasFirstPageLoaded, isFetching);
-		// if (hasFirstPageLoaded || isFetching) return;
-		console.log('scrollToBottom');
-		scrollToBottom();
-		// setHasFirstPageLoaded(true);
-	}, [scrollRef.current]);
 
 	return (
 		<div
 			style={{ height: `calc(100vh - ${bottomRefHeight}px)` }}
 			className="bg-secondary dark:bg-background flex h-full w-full flex-col overflow-y-auto pb-4"
 			ref={scrollRef}
-			onScroll={(e) => {
-				const scrollTop = (e.target as HTMLDivElement).scrollTop;
-				const isAtTop = scrollTop < SCROLL_THRESHOLD;
-
-				console.log('isAtTop', isAtTop, hasNextPage, isFetchingNextPage);
-				if (isAtTop && hasNextPage && !isFetchingNextPage) {
-					fetchNextPage();
-				}
-			}}
 		>
 			{isFetchPreviousPageError && <div>Error</div>}
 			{isFetching &&
-				new Array(10)
-					.fill(0)
-					.map((_, index) => (
-						<Skeleton
-							className={cn('bg-muted dark:bg-muted/40 m-2 flex flex-col rounded p-4')}
-							key={index}
-						/>
-					))}
+				hasNextPage &&
+				new Array(10).fill(0).map((_, index) => (
+					<div key={index} className="m-2 mx-auto flex w-[70%] flex-col items-end">
+						<Skeleton className={cn('bg-muted dark:bg-muted/40 m-2 flex w-full flex-col rounded p-4')} />
+					</div>
+				))}
 			{flatPages?.map((message) => (
 				<MessageDisplay message={message} key={message.type === 'local' ? message.localId : message.id} />
 			))}
+			{/* TODO: Move to query cache */}
 			{stream.isStreaming && (
 				<div className="m-2 mx-auto flex w-[70%] flex-col items-end">
-					<p className={cn('w-full rounded bg-green-200 p-2')}>{stream.tokens}</p>
+					<p className={cn('w-full rounded bg-green-200 p-2 dark:bg-green-700')}>
+						<MarkdownDisplay markdown={stream.tokens} />
+					</p>
 				</div>
 			)}
 		</div>
