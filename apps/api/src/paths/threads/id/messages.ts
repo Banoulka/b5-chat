@@ -113,7 +113,7 @@ export const POST = route(
 					})
 			)[0]!;
 
-			if (parsed.data.attachments) {
+			if (parsed.data.attachments && parsed.data.attachments.length > 0) {
 				await tx.insert(attachments).values(
 					parsed.data.attachments.map((attachment) => ({
 						messageId: message.id,

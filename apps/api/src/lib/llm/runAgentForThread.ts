@@ -7,7 +7,7 @@ import { getAgent } from './agent';
 import { type ModelId } from './models';
 
 const SYSTEM_PROMPT = `
-You are a helpful assistant. Responses can be in text or markdown format.
+You are a helpful assistant. Responses can be in text or markdown format. Try to keep responses short and concise.
 `;
 
 type RunAgentThreadParams = {
@@ -48,7 +48,7 @@ export const runAgentForThread = async ({ model, threadId, userId }: RunAgentThr
 
 	const streamResponse = async () => {
 		try {
-			const stream = await agent.stream(conversation);
+			const stream = await agent.stream(conversation, { stream_options: { include_usage: true } });
 
 			let tokenIndex = 0;
 
@@ -85,7 +85,6 @@ export const runAgentForThread = async ({ model, threadId, userId }: RunAgentThr
 const getConversationToInput = async (threadId: string) => {
 	const threadMessages = await db.query.messages.findMany({
 		where: ({ threadId: messagesThreadId }, { eq }) => eq(messagesThreadId, threadId),
-		with: { attachments: true },
 	});
 
 	const prompt: BaseMessageLike[] = [
@@ -95,7 +94,9 @@ const getConversationToInput = async (threadId: string) => {
 		},
 	];
 
-	for (const message of threadMessages) {
+	for (let i = 0; i < threadMessages.length; i++) {
+		const message = threadMessages[i]!;
+
 		const content = message.content.trim();
 		if (!content) continue;
 
@@ -104,25 +105,38 @@ const getConversationToInput = async (threadId: string) => {
 			content,
 		});
 
-		if (message.attachments.length > 0) {
-			await Promise.all(
-				message.attachments.map(async (attachment) => {
-					const url = await utApi.generateSignedURL(attachment.key, {
-						expiresIn: 60 * 5, // 5 minutes
-					});
+		const isLastMessage = i === threadMessages.length - 1;
 
-					prompt.push({
-						role: 'user',
-						content: [
-							{
-								type: 'image_url',
-								image_url: { url },
-							},
-						],
-					});
-				}),
-			);
-		}
+		// Only add images to the last message (to save tokens?)
+		if (!isLastMessage) continue;
+		if (message.type !== 'user') continue;
+
+		const attachments = await db.query.attachments.findMany({
+			where: ({ messageId }, { eq }) => eq(messageId, message.id),
+		});
+
+		if (attachments.length === 0) continue;
+
+		const urls = await Promise.all(
+			attachments.map(async (attachment) => {
+				const url = await utApi.generateSignedURL(attachment.key, {
+					expiresIn: 60 * 5, // 5 minutes
+				});
+				return url.ufsUrl;
+			}),
+		);
+
+		urls.forEach((url) =>
+			prompt.push({
+				role: 'user',
+				content: [
+					{
+						type: 'image_url',
+						image_url: { url, detail: 'low' },
+					},
+				],
+			}),
+		);
 	}
 
 	return prompt;
