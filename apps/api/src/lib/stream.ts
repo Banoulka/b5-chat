@@ -1,4 +1,4 @@
-import { END_OF_TEXT_TOKEN } from 'packages/common';
+import { END_OF_TEXT_TOKEN } from '@b5-chat/common';
 import { ClientResponse } from './ClientResponse';
 
 type TokenData = {

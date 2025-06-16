@@ -17,6 +17,7 @@ export type APIThreadMessage = {
 	attachments: {
 		key: string;
 		name: string;
+		url: string;
 	}[];
 };
 
@@ -45,18 +46,20 @@ export type API_ThreadMessagesResponse = {
 };
 
 // LLM
-export type Capability = 'tools' | 'web' | 'image' | 'file';
+export type Capability = 'tools' | 'web_search_options';
 
-export type ModelModality = 'text->text' | 'text+image->text';
+export type Modality = 'text' | 'image' | 'file';
 
 export interface ModelCard {
 	id: string;
 	canonical_slug: string;
 	name: string;
 	context_length: number;
-	supported_parameters: string[];
+	supported_parameters: Capability[];
 	architecture: {
-		modality: ModelModality;
+		modality: string;
+		input_modalities: Modality[];
+		output_modalities: Modality[];
 	};
 }
 

@@ -1,3 +1,4 @@
+import { type CreateMessageSchema } from '@b5-chat/common/schemas';
 import { type InfiniteData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { useRef } from 'react';
@@ -31,12 +32,12 @@ function RouteComponent() {
 	const { mutateAsync: sendMessage } = useMutation<
 		unknown,
 		unknown,
-		{ content: string; modelId: string },
+		CreateMessageSchema,
 		{ previousData: InfiniteData<QueryTypeMessageData> | undefined }
 	>({
-		mutationFn: ({ content, modelId }) =>
+		mutationFn: ({ content, modelId, attachments }) =>
 			api(`/threads/${threadId}/messages`, {
-				body: JSON.stringify({ content: content, modelId }),
+				body: JSON.stringify({ attachments, content, modelId }),
 				method: 'POST',
 			}),
 		onError: (_err, _variables, context) => {
@@ -109,8 +110,8 @@ function RouteComponent() {
 	if (isLoading) return <div>Loading...</div>;
 	if (!thread) return <div>Not found</div>;
 
-	const handleSendNewMessage = async (content: string, modelId: string) => {
-		await sendMessage({ content, modelId });
+	const handleSendNewMessage = async (data: CreateMessageSchema) => {
+		await sendMessage(data);
 
 		stream.controls.start();
 

@@ -64,6 +64,13 @@ export const attachments = pgTable(
 	}),
 );
 
+export const attachmentRelations = relations(attachments, ({ one }) => ({
+	message: one(messages, {
+		fields: [attachments.messageId],
+		references: [messages.id],
+	}),
+}));
+
 export const threadsRelations = relations(threads, ({ many }) => ({
 	messages: many(messages),
 }));

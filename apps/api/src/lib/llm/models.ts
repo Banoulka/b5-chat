@@ -11,6 +11,8 @@ export const defaultModels = [
 		supported_parameters: [],
 		architecture: {
 			modality: 'text+image->text',
+			input_modalities: ['text', 'file', 'image'],
+			output_modalities: ['text'],
 		},
 	},
 	{
@@ -21,6 +23,8 @@ export const defaultModels = [
 		supported_parameters: ['reasoning', 'include_reasoning'],
 		architecture: {
 			modality: 'text+image->text',
+			input_modalities: ['file', 'image', 'text'],
+			output_modalities: ['text'],
 		},
 	},
 	{
@@ -31,6 +35,8 @@ export const defaultModels = [
 		supported_parameters: ['reasoning', 'include_reasoning'],
 		architecture: {
 			modality: 'text+image->text',
+			input_modalities: ['image', 'text'],
+			output_modalities: ['text'],
 		},
 	},
 	{
@@ -41,6 +47,8 @@ export const defaultModels = [
 		supported_parameters: [],
 		architecture: {
 			modality: 'text->text',
+			input_modalities: ['text'],
+			output_modalities: ['text'],
 		},
 	},
 	{
@@ -51,6 +59,8 @@ export const defaultModels = [
 		supported_parameters: [],
 		architecture: {
 			modality: 'text->text',
+			input_modalities: ['text'],
+			output_modalities: ['text'],
 		},
 	},
 	{
@@ -61,6 +71,8 @@ export const defaultModels = [
 		supported_parameters: ['web_search_options'],
 		architecture: {
 			modality: 'text+image->text',
+			input_modalities: ['image', 'text', 'file'],
+			output_modalities: ['text'],
 		},
 	},
 	{
@@ -71,6 +83,8 @@ export const defaultModels = [
 		supported_parameters: [],
 		architecture: {
 			modality: 'text+image->text',
+			input_modalities: ['text', 'image'],
+			output_modalities: ['text'],
 		},
 	},
 	{
@@ -81,6 +95,8 @@ export const defaultModels = [
 		supported_parameters: [],
 		architecture: {
 			modality: 'text->text',
+			input_modalities: ['text'],
+			output_modalities: ['text'],
 		},
 	},
 	{
@@ -91,6 +107,8 @@ export const defaultModels = [
 		supported_parameters: ['reasoning', 'include_reasoning'],
 		architecture: {
 			modality: 'text+image->text',
+			input_modalities: ['text', 'image'],
+			output_modalities: ['text'],
 		},
 	},
 	{
@@ -101,6 +119,8 @@ export const defaultModels = [
 		supported_parameters: [],
 		architecture: {
 			modality: 'text+image->text',
+			input_modalities: ['text', 'image', 'file'],
+			output_modalities: ['text'],
 		},
 	},
 	{
@@ -111,6 +131,8 @@ export const defaultModels = [
 		supported_parameters: ['web_search_options'],
 		architecture: {
 			modality: 'text+image->text',
+			input_modalities: ['text', 'image', 'file'],
+			output_modalities: ['text'],
 		},
 	},
 	{
@@ -121,6 +143,8 @@ export const defaultModels = [
 		supported_parameters: [],
 		architecture: {
 			modality: 'text+image->text',
+			input_modalities: ['text', 'image'],
+			output_modalities: ['text'],
 		},
 	},
 ] as const satisfies ModelCard[];
@@ -130,3 +154,10 @@ export type ModelId = (typeof defaultModels)[number]['id'];
 const defaultModelIds = defaultModels.map((m) => m.id);
 
 export const isSupportedModel = (model: unknown): model is ModelId => defaultModelIds.includes(model as any);
+
+export const isAttachmentSupported = (modelId: ModelId) => {
+	const model = defaultModels.find((m) => m.id === modelId);
+	if (!model) return false;
+
+	return model.architecture.modality === 'text+image->text';
+};

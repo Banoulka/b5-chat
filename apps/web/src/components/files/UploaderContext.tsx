@@ -14,7 +14,7 @@ export const UploadButton = generateUploadButton<UploadThingRouter>({
 
 export const { useUploadThing, uploadFiles } = generateReactHelpers<UploadThingRouter>();
 
-type LocalFile = {
+export type LocalFile = {
 	name: string;
 	hash: string;
 	url: string;
@@ -26,6 +26,7 @@ const UploaderContext = createContext<{
 	readyFiles: LocalFile[];
 	addFile: (file: LocalFile) => void;
 	removeFile: (key: string) => void;
+	clearFiles: () => void;
 } | null>(null);
 
 export const UploaderContextProvider = ({ children }: { children: React.ReactNode }) => {
@@ -40,7 +41,15 @@ export const UploaderContextProvider = ({ children }: { children: React.ReactNod
 		setReadyFiles((prv) => [...prv, file]);
 	};
 
-	return <UploaderContext.Provider value={{ addFile, readyFiles, removeFile }}>{children}</UploaderContext.Provider>;
+	const clearFiles = () => {
+		setReadyFiles([]);
+	};
+
+	return (
+		<UploaderContext.Provider value={{ addFile, clearFiles, readyFiles, removeFile }}>
+			{children}
+		</UploaderContext.Provider>
+	);
 };
 
 export const useUploaderContext = () => {

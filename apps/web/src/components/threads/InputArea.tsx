@@ -1,4 +1,5 @@
 import type { ModelCard } from '@b5-chat/common';
+import type { CreateMessageSchema } from '@b5-chat/common/schemas';
 import { useQuery } from '@tanstack/react-query';
 import { useLocalStorage } from '@uidotdev/usehooks';
 import { SendHorizontal } from 'lucide-react';
@@ -9,6 +10,7 @@ import type { useStream } from '@/hooks/use-stream';
 
 import { LocalFileDisplay } from '../files/LocalFileDisplay';
 import UploaderButton from '../files/UploaderButton';
+import { useUploaderContext } from '../files/UploaderContext';
 import { Button } from '../ui/button';
 import { Combobox } from '../ui/combobox';
 import { Textarea } from '../ui/textarea';
@@ -16,13 +18,13 @@ import { Textarea } from '../ui/textarea';
 type MessageInputProps = {
 	threadId?: string;
 	ref?: React.RefObject<HTMLDivElement>;
-	onSendNewMessage?: (content: string, modelId: string) => void;
+	onSendNewMessage?: (data: CreateMessageSchema) => void;
 	stream: ReturnType<typeof useStream>;
 };
 
 const InputArea = ({ stream, threadId, onSendNewMessage }: MessageInputProps) => {
 	const { data: modelCatalogue } = useQuery(getModelCatalogueOpts);
-
+	const { readyFiles, clearFiles } = useUploaderContext();
 	const [model, setModel] = useLocalStorage(
 		`last-model-${threadId}`,
 		modelCatalogue?.defaultModel ?? 'openai/gpt-4.1',
@@ -32,8 +34,13 @@ const InputArea = ({ stream, threadId, onSendNewMessage }: MessageInputProps) =>
 	const handleSend = () => {
 		if (content.trim() === '') return;
 
-		onSendNewMessage?.(content, model);
+		onSendNewMessage?.({
+			attachments: readyFiles.map((file) => ({ key: file.key, name: file.name })),
+			content,
+			modelId: model,
+		});
 		setContent('');
+		clearFiles();
 	};
 
 	return (

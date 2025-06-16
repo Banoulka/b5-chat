@@ -10,8 +10,13 @@ export const orClient = new OpenAI({
 	},
 });
 
-export const getAgent = (model: string) =>
-	new ChatOpenAI({
+const modelCache = new Map<string, ChatOpenAI>();
+
+export const getAgent = (model: string) => {
+	const cachedModel = modelCache.get(model);
+	if (cachedModel) return cachedModel;
+
+	const newModel = new ChatOpenAI({
 		model,
 		temperature: 0.5,
 		streaming: true,
@@ -25,3 +30,8 @@ export const getAgent = (model: string) =>
 		},
 		// TODO: Options like max tokens? etc
 	});
+
+	modelCache.set(model, newModel);
+
+	return newModel;
+};

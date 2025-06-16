@@ -30,6 +30,7 @@
 		"@t3-oss/env-core": "^0.13.6",
 		"drizzle-orm": "^0.44.2",
 		"effect": "3.14.21",
+		"pg": "^8.16.0",
 		"uploadthing": "^7.7.2",
 		"zod": "^3.25.56"
 	}

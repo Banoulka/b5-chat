@@ -1,12 +1,13 @@
-import type { BaseLanguageModelInput } from '@langchain/core/language_models/base';
+import type { BaseMessageLike } from '@langchain/core/messages';
 import { messages } from '../../db/schema';
 import { db } from '../../service/db';
+import { utApi } from '../../service/uploadthing';
 import { deleteStreamSession, getEmitter, getStreamSessionContent } from '../stream';
 import { getAgent } from './agent';
 import { type ModelId } from './models';
 
 const SYSTEM_PROMPT = `
-You are a helpful assistant. A conversation is provided in the following format: Responses can be in text or markdown format.
+You are a helpful assistant. Responses can be in text or markdown format.
 `;
 
 type RunAgentThreadParams = {
@@ -81,40 +82,48 @@ export const runAgentForThread = async ({ model, threadId, userId }: RunAgentThr
 	return { success: true };
 };
 
-// TODO: Merge conversations together manually or pass as array?
 const getConversationToInput = async (threadId: string) => {
 	const threadMessages = await db.query.messages.findMany({
 		where: ({ threadId: messagesThreadId }, { eq }) => eq(messagesThreadId, threadId),
+		with: { attachments: true },
 	});
 
-	// trim whitespace other special characters
-	// remove empty messages
-	// add markers for message types (user, assistant)
-	// const mappedMessages = threadMessages.map((message) => {
-	// 	const content = message.content.trim();
-	// 	if (!content) return null;
-
-	// 	const startMarker = message.type === 'user' ? '<user>' : '<assistant>';
-	// 	const endMarker = message.type === 'user' ? '</user>' : '</assistant>';
-
-	// 	// replace newlines with spaces, and trim whitespace
-	// 	const trimmedContent = content.replace(/^[\n\s]+|[\n\s]+$/g, '');
-
-	// 	return `${startMarker}${trimmedContent}${endMarker}`;
-	// });
-
-	// const filteredMessages = mappedMessages.filter((message) => message !== null);
-
-	// const conversation = filteredMessages.join('\n');
-
-	return [
+	const prompt: BaseMessageLike[] = [
 		{
 			role: 'system',
 			content: SYSTEM_PROMPT,
 		},
-		...threadMessages.map((message) => ({
+	];
+
+	for (const message of threadMessages) {
+		const content = message.content.trim();
+		if (!content) continue;
+
+		prompt.push({
 			role: message.type === 'user' ? 'user' : 'assistant',
-			content: message.content,
-		})),
-	] satisfies BaseLanguageModelInput;
+			content,
+		});
+
+		if (message.attachments.length > 0) {
+			await Promise.all(
+				message.attachments.map(async (attachment) => {
+					const url = await utApi.generateSignedURL(attachment.key, {
+						expiresIn: 60 * 5, // 5 minutes
+					});
+
+					prompt.push({
+						role: 'user',
+						content: [
+							{
+								type: 'image_url',
+								image_url: { url },
+							},
+						],
+					});
+				}),
+			);
+		}
+	}
+
+	return prompt;
 };

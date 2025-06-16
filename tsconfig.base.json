@@ -9,7 +9,6 @@
 		"noUncheckedIndexedAccess": true,
 		"noFallthroughCasesInSwitch": true,
 		"noUncheckedSideEffectImports": true,
-		"baseUrl": ".",
 		"allowImportingTsExtensions": true,
 		"moduleDetection": "force",
 		"verbatimModuleSyntax": true,
@@ -17,5 +16,9 @@
 		"noUnusedParameters": true,
 		"skipLibCheck": true
 	},
-	"exclude": ["node_modules", "dist", "coverage"]
+	"exclude": [
+		"node_modules",
+		"dist",
+		"coverage"
+	]
 }
