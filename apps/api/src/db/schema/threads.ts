@@ -20,8 +20,6 @@ export const threads = pgTable(
 
 export const messageTypeEnum = pgEnum('type', ['agent', 'user']);
 
-export const contentTypeEnum = pgEnum('contentType', ['text', 'image']);
-
 export const messages = pgTable(
 	'message',
 	{
@@ -31,7 +29,6 @@ export const messages = pgTable(
 		sortId: serial().notNull(),
 		content: text('content').notNull(),
 		type: messageTypeEnum('type').notNull(),
-		contentType: contentTypeEnum('contentType').notNull().default('text'),
 		threadId: uuid('threadId')
 			.notNull()
 			.references(() => threads.id, { onDelete: 'cascade' }),
@@ -50,11 +47,28 @@ export const messages = pgTable(
 	}),
 );
 
+export const attachments = pgTable(
+	'attachment',
+	{
+		id: uuid('id')
+			.primaryKey()
+			.default(sql`gen_random_uuid()`),
+		messageId: uuid('messageId')
+			.notNull()
+			.references(() => messages.id, { onDelete: 'cascade' }),
+		key: text('key').notNull(),
+		name: text('name').notNull(),
+	},
+	(table) => ({
+		messageIdIdx: index('attachments_message_id_idx').on(table.messageId),
+	}),
+);
+
 export const threadsRelations = relations(threads, ({ many }) => ({
 	messages: many(messages),
 }));
 
-export const messagesRelations = relations(messages, ({ one }) => ({
+export const messagesRelations = relations(messages, ({ one, many }) => ({
 	thread: one(threads, {
 		fields: [messages.threadId],
 		references: [threads.id],
@@ -63,4 +77,5 @@ export const messagesRelations = relations(messages, ({ one }) => ({
 		fields: [messages.userId],
 		references: [users.id],
 	}),
+	attachments: many(attachments),
 }));

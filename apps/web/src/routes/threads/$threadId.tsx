@@ -1,9 +1,10 @@
 import { type InfiniteData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { api } from '@/components/auth/AuthContext';
+import { UploaderContextProvider } from '@/components/files/UploaderContext';
 import InputArea from '@/components/threads/InputArea';
 import MessageList, { type LocalMessage, type QueryTypeMessageData } from '@/components/threads/MessageList';
 import { getMessageOpts, getThreadOpts } from '@/hooks/queries';
@@ -17,7 +18,6 @@ export const Route = createFileRoute('/threads/$threadId')({
 function RouteComponent() {
 	const { threadId } = Route.useParams();
 	const queryClient = useQueryClient();
-	const [selectedModel, setSelectedModel] = useState<string | null>(null);
 
 	const {
 		data: thread,
@@ -117,7 +117,7 @@ function RouteComponent() {
 		if (messageListRef.current) messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
 	};
 	return (
-		<>
+		<UploaderContextProvider>
 			<MessageList
 				ref={messageListRef}
 				key={threadId}
@@ -128,6 +128,6 @@ function RouteComponent() {
 			<div ref={sizeRef}>
 				<InputArea threadId={threadId} key={threadId} onSendNewMessage={handleSendNewMessage} stream={stream} />
 			</div>
-		</>
+		</UploaderContextProvider>
 	);
 }

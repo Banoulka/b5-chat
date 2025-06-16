@@ -40,6 +40,7 @@ export const GET = route(
 				...message,
 				createdAt: message.createdAt.toISOString(),
 				updatedAt: message.updatedAt.toISOString(),
+				attachments: [],
 			})),
 			meta: {
 				nextCursor,
@@ -52,6 +53,14 @@ export const GET = route(
 const createMessageSchema = z.object({
 	content: z.string().trim().min(1, 'Content is required'),
 	modelId: z.string().trim().min(1, 'Model ID is required'),
+	attachments: z
+		.array(
+			z.object({
+				key: z.string().trim().min(1, 'Key is required'),
+				name: z.string().trim().min(1, 'Name is required'),
+			}),
+		)
+		.optional(),
 });
 
 export const POST = route(

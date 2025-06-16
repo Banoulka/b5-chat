@@ -10,9 +10,10 @@ const router = {
 		image: { maxFileSize: '8MB' },
 	})
 		.middleware(async (opts) => {
+			// TODO: JWT from header
 			const session = await getSession(opts.req);
 
-			if (!session?.user) throw new Error('Unauthorized');
+			// if (!session?.user) throw new UnauthorizedError('Unauthorized');
 
 			return { session };
 		})
@@ -40,5 +41,7 @@ export type UploadThingRouter = typeof router;
 export const requestHandler = makeAdapterHandler<[BunRequest, Server], AdapterArgs>(
 	(req, server) => Effect.succeed({ req, server }),
 	(req) => Effect.succeed(req),
-	{ router },
+	{
+		router,
+	},
 );

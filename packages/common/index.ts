@@ -10,11 +10,14 @@ export type Session = {
 export type APIThreadMessage = {
 	id: string;
 	type: 'agent' | 'user';
-	contentType: 'text' | 'image';
 	model: string | null;
 	content: string;
 	createdAt: string;
 	updatedAt: string;
+	attachments: {
+		key: string;
+		name: string;
+	}[];
 };
 
 export type APIThread = {

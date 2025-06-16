@@ -73,19 +73,26 @@ export const router = async () => {
 		'/auth/*': (req: Bun.BunRequest<'/auth/*'>) =>
 			applyMiddlewareToRequest(req, [...globalMiddleware], async (req: Bun.BunRequest<'/auth/*'>) => {
 				const response = await authHandler(req);
-				response.headers.set('Access-Control-Allow-Origin', env.WEB_URL);
-				response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH');
-				response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-				response.headers.set('Access-Control-Allow-Credentials', 'true');
+				setCustomHeaders(response.headers);
 				return response;
 			}),
 	};
 
 	const uploadThingRoutes = {
-		'/api/uploadthing': (req: Bun.BunRequest<'/api/uploadthing'>, server: Server) => {
-			setCustomHeaders(req.headers);
-			return requestHandler(req, server);
-		},
+		'/api/uploadthing': (req: Bun.BunRequest<'/'>, server: Server) =>
+			applyMiddlewareToRequest(req, [...globalMiddleware], async (req) => {
+				console.log(`UPLOADTHING: ${req.method} ${req.url}`);
+
+				if (req.method === 'OPTIONS') {
+					const response = new Response(null, { status: 200 });
+					setCustomHeaders(response.headers);
+					return response;
+				}
+
+				const response = await requestHandler(req, server);
+				setCustomHeaders(response.headers);
+				return response;
+			}),
 	};
 
 	const redirectHomeUrl = {
@@ -101,6 +108,7 @@ export const router = async () => {
 	const notFoundRoute = {
 		'/**': (req: Bun.BunRequest<string>) =>
 			applyMiddlewareToRequest(req, [...globalMiddleware], async () => {
+				console.log(`NOT FOUND: ${req.method} ${req.url}`);
 				throw new NotFoundError('Not Found');
 			}),
 	};

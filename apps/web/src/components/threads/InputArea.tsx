@@ -7,10 +7,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { getModelCatalogueOpts } from '@/hooks/queries';
 import type { useStream } from '@/hooks/use-stream';
 
+import { LocalFileDisplay } from '../files/LocalFileDisplay';
+import UploaderButton from '../files/UploaderButton';
 import { Button } from '../ui/button';
 import { Combobox } from '../ui/combobox';
 import { Textarea } from '../ui/textarea';
-import { UploadButton } from '../uploadthing';
 
 type MessageInputProps = {
 	threadId?: string;
@@ -37,6 +38,7 @@ const InputArea = ({ stream, threadId, onSendNewMessage }: MessageInputProps) =>
 
 	return (
 		<div className="bg-secondary mx-auto mt-auto mb-2 flex w-[80%] flex-col rounded-2xl p-2">
+			<LocalFileDisplay />
 			<Textarea
 				className="max-h-90 resize-none overflow-y-auto border-none bg-transparent shadow-none focus-visible:border-none focus-visible:ring-0 dark:bg-transparent dark:text-white"
 				placeholder="Type your message here."
@@ -65,7 +67,7 @@ const InputArea = ({ stream, threadId, onSendNewMessage }: MessageInputProps) =>
 					onChange={setModel}
 				/>
 
-				<UploadButton endpoint="imageUploader" />
+				<UploaderButton />
 
 				<Tooltip>
 					<TooltipTrigger asChild>
