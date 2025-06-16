@@ -46,7 +46,7 @@ export type API_ThreadMessagesResponse = {
 };
 
 // LLM
-export type Capability = 'tools' | 'web_search_options';
+export type Capability = 'tools' | 'web_search_options' | 'reasoning' | 'include_reasoning';
 
 export type Modality = 'text' | 'image' | 'file';
 
