@@ -22,7 +22,7 @@
 		"@auth/drizzle-adapter": "^1.9.1",
 		"@b5-chat/common": "workspace:*",
 		"@langchain/community": "^0.3.45",
-		"@langchain/core": "^0.3.57",
+		"@langchain/core": "^0.3.58",
 		"@langchain/langgraph": "^0.3.1",
 		"@langchain/openai": "^0.5.13",
 		"@langchain/tavily": "^0.1.2",

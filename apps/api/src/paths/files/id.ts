@@ -8,7 +8,6 @@ export const DELETE = route(
 	'/files/:key',
 	async (req) => {
 		const { key } = req.params;
-		console.log('delete file', key);
 
 		const file = await utApi.deleteFiles([key]);
 
@@ -19,4 +18,4 @@ export const DELETE = route(
 	[auth],
 );
 
-export const OPTIONS = route('/files/:key', async () => new Response(null, { status: 200 }));
+export const OPTIONS = route('/files/:key', async () => new ClientResponse(null, { status: 200 }));

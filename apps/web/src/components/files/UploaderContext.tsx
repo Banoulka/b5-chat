@@ -33,9 +33,7 @@ export const UploaderContextProvider = ({ children }: { children: React.ReactNod
 
 	const removeFile = (key: string) => {
 		setReadyFiles((prv) => prv.filter((f) => f.key !== key));
-		api(`/files/${key}`, {
-			method: 'DELETE',
-		});
+		api(`/files/${key}`, { method: 'DELETE' });
 	};
 
 	const addFile = (file: LocalFile) => {

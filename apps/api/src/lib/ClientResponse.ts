@@ -1,7 +1,7 @@
 import { setCustomHeaders } from '../utils/setCustomHeaders';
 
 export class ClientResponse extends Response {
-	constructor(body?: BodyInit, init?: ResponseInit) {
+	constructor(body?: BodyInit | null, init?: ResponseInit) {
 		super(body, init);
 		setCustomHeaders(this.headers);
 	}
