@@ -75,3 +75,4 @@ const server = Bun.serve({
 // });
 
 console.log(`Server is running on port ${server.hostname}:${server.port}`);
+console.log(env.DATABASE_URL)

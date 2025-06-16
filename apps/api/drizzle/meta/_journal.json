@@ -15,6 +15,13 @@
       "when": 1749671209420,
       "tag": "0001_abandoned_siren",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1750076216458,
+      "tag": "0002_natural_wraith",
+      "breakpoints": true
     }
   ]
 }
