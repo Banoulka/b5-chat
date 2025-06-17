@@ -1,6 +1,6 @@
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { hopscotch } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { tomorrow as theme } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import remarkGfm from 'remark-gfm';
 
 const MarkdownDisplay = ({ markdown }: { markdown: string }) => {
@@ -23,7 +23,7 @@ const MarkdownDisplay = ({ markdown }: { markdown: string }) => {
 								ref={ref as any}
 								children={String(children).replace(/\n$/, '')}
 								language={match[1]}
-								style={hopscotch}
+								style={theme}
 							/>
 						) : (
 							<code {...rest} className={className}>
