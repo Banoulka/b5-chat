@@ -2,7 +2,15 @@ import type { ModelCard } from '@b5-chat/common';
 import type { CreateMessageSchema } from '@b5-chat/common/schemas';
 import { useQuery } from '@tanstack/react-query';
 import { useLocalStorage } from '@uidotdev/usehooks';
-import { LucideBrain, LucideGlobe, LucideImage, LucideInfo, LucidePaperclip, SendHorizontal } from 'lucide-react';
+import {
+	LucideBrain,
+	LucideGlobe,
+	LucideImage,
+	LucideInfo,
+	LucidePaperclip,
+	LucideSquare,
+	SendHorizontal,
+} from 'lucide-react';
 import { useMemo } from 'react';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -54,6 +62,7 @@ const InputArea = ({ stream, inputKey, onSendNewMessage }: MessageInputProps) =>
 	);
 
 	const handleSend = () => {
+		console.log('handleSend', content);
 		if (content.trim() === '') return;
 
 		onSendNewMessage?.({
@@ -143,12 +152,19 @@ const InputArea = ({ stream, inputKey, onSendNewMessage }: MessageInputProps) =>
 
 				<Tooltip>
 					<TooltipTrigger asChild>
-						<Button disabled={stream.isStreaming} className="ml-auto" size="icon" onClick={handleSend}>
-							<SendHorizontal />
+						<Button
+							className="ml-auto"
+							size="icon"
+							onClick={() => {
+								if (stream.isStreaming) stream.controls.cancel();
+								else handleSend();
+							}}
+						>
+							{stream.isStreaming ? <LucideSquare /> : <SendHorizontal />}
 						</Button>
 					</TooltipTrigger>
 					<TooltipContent>
-						<p>Send message</p>
+						<p>{stream.isStreaming ? 'Cancel' : 'Send message'}</p>
 					</TooltipContent>
 				</Tooltip>
 			</div>

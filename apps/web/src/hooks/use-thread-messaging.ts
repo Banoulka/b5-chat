@@ -1,8 +1,8 @@
-import type { APIThread } from '@b5-chat/common';
+import type { APIThread, APIThreadMessage } from '@b5-chat/common';
 import type { CreateMessageSchema } from '@b5-chat/common/schemas';
 import { type InfiniteData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { api } from '@/components/auth/AuthContext';
@@ -26,6 +26,11 @@ export const useThreadMessaging = (initialThreadId?: string) => {
 		enabled: !!threadId,
 	});
 
+	useEffect(() => {
+		// keep the threadId in sync with the initialThreadId
+		if (initialThreadId) setThreadId(initialThreadId);
+	}, [initialThreadId]);
+
 	const thread = useMemo(() => threads?.data.find((t) => t.id === threadId), [threads, threadId]);
 
 	const createThread = useMutation<{ id: string }, unknown, void>({
@@ -37,32 +42,19 @@ export const useThreadMessaging = (initialThreadId?: string) => {
 	});
 
 	const { mutateAsync: sendMessage } = useMutation<
+		{ data: APIThreadMessage; changedThread: boolean },
 		unknown,
-		unknown,
-		CreateMessageSchema,
+		CreateMessageSchema & { threadId: string },
 		{ previousData: InfiniteData<QueryTypeMessageData> | undefined }
 	>({
-		mutationFn: async (data) => {
-			let id = threadId;
-			// lazily create thread beforehand
-			if (!id) {
-				const created = await createThread.mutateAsync();
-				id = created.id;
-			}
-
-			const response = await api(`/threads/${id}/messages`, {
+		mutationFn: async ({ threadId, ...data }) => {
+			const response = await api(`/threads/${threadId}/messages`, {
 				body: JSON.stringify(data),
 				method: 'POST',
 			});
+			console.log('sendMessage response', response);
 
-			console.log('response', response, threadId, id);
-
-			// navigate to the new thread if we created it
-			if (!threadId) {
-				navigate({ replace: true, to: `/threads/${id}` });
-			}
-
-			return response;
+			return response as { data: APIThreadMessage; changedThread: boolean };
 		},
 		onError: (_err, _variables, context) => {
 			if (!threadId) return;
@@ -71,9 +63,7 @@ export const useThreadMessaging = (initialThreadId?: string) => {
 			if (context?.previousData)
 				queryClient.setQueryData(getMessageOpts(threadId).queryKey, context.previousData);
 		},
-		onMutate: async ({ content }) => {
-			if (!threadId) return;
-
+		onMutate: async ({ content, threadId }) => {
 			await queryClient.cancelQueries(getMessageOpts(threadId));
 
 			const previousData = queryClient.getQueryData<InfiniteData<QueryTypeMessageData>>(
@@ -114,17 +104,41 @@ export const useThreadMessaging = (initialThreadId?: string) => {
 
 			return { previousData };
 		},
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		onSettled: (response: any) => {
-			console.log('response on settled', response);
-			if (threadId) queryClient.invalidateQueries(getMessageOpts(threadId));
-
-			if (response?.changedThread) {
-				queryClient.invalidateQueries(getThreadOpts);
-				navigate({ replace: true, to: `/threads/${threadId}` });
+		onSettled: (response) => {
+			console.log('onSettled response', response, threadId);
+			if (threadId) {
+				queryClient.invalidateQueries(getMessageOpts(threadId));
+				if (response?.changedThread) {
+					navigate({ replace: true, to: `/threads/${threadId}` });
+					setTimeout(() => {
+						// after a brief delay, invalidate the threads query to get the new thread name
+						queryClient.invalidateQueries(getThreadOpts);
+					}, 4000);
+				}
 			}
 		},
 	});
+
+	const handleSendMessage = useCallback(
+		async (data: CreateMessageSchema) => {
+			let id = threadId;
+
+			if (!id) {
+				const created = await createThread.mutateAsync();
+				id = created.id;
+				setThreadId(id);
+			}
+
+			await sendMessage({ ...data, threadId: id });
+
+			if (!threadId) {
+				console.log('had no thread id, navigate to new thread', id);
+				await queryClient.invalidateQueries(getThreadOpts);
+				navigate({ replace: true, to: `/threads/${id}` });
+			}
+		},
+		[threadId, createThread, navigate, queryClient],
+	);
 
 	const stream = useStream({
 		id: threadId,
@@ -132,5 +146,5 @@ export const useThreadMessaging = (initialThreadId?: string) => {
 		url: threadId ? `/threads/${threadId}/stream` : '',
 	});
 
-	return { sendMessage, stream, thread, threadErr, threadId, threadLoading };
+	return { sendMessage: handleSendMessage, stream, thread, threadErr, threadId, threadLoading };
 };

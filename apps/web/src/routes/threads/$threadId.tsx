@@ -17,13 +17,12 @@ export const Route = createFileRoute('/threads/$threadId')({
 function RouteComponent() {
 	const { threadId } = Route.useParams();
 	const { thread, threadLoading, threadErr, sendMessage, stream } = useThreadMessaging(threadId);
+	console.log('thread', thread?.id, thread?.name);
 
 	const bottomRef = useRef<HTMLDivElement>(null);
 
 	const { size, sizeRef } = useSize(bottomRef, { defaultSize: { height: 100, width: 0 } });
 	const messageListRef = useRef<HTMLDivElement>(null);
-
-	console.log('thread', thread, threadId);
 
 	if (threadErr) return <div>Error: {threadErr.message}</div>;
 	if (threadLoading) return <FullScreenSpinner />;

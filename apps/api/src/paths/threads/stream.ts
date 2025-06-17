@@ -1,6 +1,6 @@
 import { ClientResponse } from '../../lib/ClientResponse';
 import { route } from '../../lib/router/route';
-import { hasSession, streamSession } from '../../lib/stream';
+import { deleteStreamSession, hasSession, streamSession } from '../../lib/stream';
 
 export const HEAD = route('/threads/:threadId/stream', async (req) => {
 	const sessionId = `thread-${req.params.threadId}`;
@@ -27,6 +27,11 @@ export const DELETE = route('/threads/:threadId/stream', async (req) => {
 	const sessionId = `thread-${req.params.threadId}`;
 
 	// TODO: Somehow cancel the stream etc.
+	deleteStreamSession(sessionId);
 
 	return ClientResponse.json({ message: 'Session deleted' }, { status: 200 });
+});
+
+export const OPTIONS = route('/threads/:threadId/stream', async () => {
+	return new ClientResponse(null, { status: 200 });
 });

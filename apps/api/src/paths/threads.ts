@@ -1,4 +1,5 @@
 import type { API_ThreadsResponse, APIThread } from '@b5-chat/common';
+import { desc } from 'drizzle-orm';
 import { threads } from '../db/schema';
 import { ClientResponse } from '../lib/ClientResponse';
 import { auth } from '../lib/middleware/auth';
@@ -8,9 +9,11 @@ import { db } from '../service/db';
 export const GET = route(
 	'/threads',
 	async () => {
-		const threads = await db.query.threads.findMany();
+		const allThreads = await db.query.threads.findMany({
+			orderBy: [desc(threads.updatedAt)],
+		});
 		return ClientResponse.json({
-			data: threads.map((thread) => ({
+			data: allThreads.map((thread) => ({
 				id: thread.id,
 				name: thread.name,
 				createdAt: thread.createdAt.toISOString(),
@@ -19,7 +22,7 @@ export const GET = route(
 			meta: {
 				nextCursor: null,
 				prevCursor: null,
-				total: threads.length,
+				total: allThreads.length,
 			},
 		} satisfies API_ThreadsResponse);
 	},

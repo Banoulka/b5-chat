@@ -9,6 +9,7 @@ printRoutes(routes);
 
 const server = Bun.serve({
 	port: env.PORT,
+	idleTimeout: 60, // wait a minute before timeout
 	hostname: '0.0.0.0',
 	development: !import.meta.env.NODE_ENV || import.meta.env.NODE_ENV === 'development',
 	// websocket: {
@@ -75,4 +76,4 @@ const server = Bun.serve({
 // });
 
 console.log(`Server is running on port ${server.hostname}:${server.port}`);
-console.log(env.DATABASE_URL)
+console.log(env.DATABASE_URL);

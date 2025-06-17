@@ -27,7 +27,6 @@ import { useAuth } from '../auth/AuthContext';
 
 export function AppSidebar({ children }: { children: React.ReactNode }) {
 	const params = useParams({ from: '/threads/$threadId', shouldThrow: false });
-	console.log('threadId', params?.threadId);
 
 	const { data: threads } = useQuery(getThreadOpts);
 

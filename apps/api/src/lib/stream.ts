@@ -10,6 +10,7 @@ type Session = {
 	tokens: TokenData[];
 	emitter: EventTarget;
 	done: boolean;
+	cancel?: () => void;
 };
 
 const sessions = new Map<string, Session>();
@@ -37,6 +38,11 @@ export const getEmitter = (id: string) => {
 	return emitter;
 };
 
+export const setEmitterCancelEvent = (id: string, cancel: () => void) => {
+	const session = sessions.get(id);
+	if (session) session.cancel = cancel;
+};
+
 export const getStreamSessionContent = (id: string) => {
 	const session = sessions.get(id);
 
@@ -49,6 +55,13 @@ export const getStreamSessionContent = (id: string) => {
 };
 
 export const deleteStreamSession = (id: string) => {
+	const session = sessions.get(id);
+
+	if (session) {
+		session.emitter.dispatchEvent(new Event('done'));
+		session.cancel?.();
+	}
+
 	sessions.delete(id);
 };
 

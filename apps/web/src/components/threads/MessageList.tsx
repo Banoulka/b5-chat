@@ -103,9 +103,9 @@ const MessageDisplay = ({ message }: { message: MessageData }) => {
 			<div
 				className={cn(
 					'rounded-2xl px-4 py-2',
-					message.type === 'user'
-						? 'bg-secondary w-fit max-w-[70%] dark:text-blue-50'
-						: 'w-full bg-transparent dark:text-green-50',
+					message.type === 'user' || message.type === 'local'
+						? 'bg-secondary w-fit max-w-[70%]'
+						: 'w-full bg-transparent',
 				)}
 			>
 				{message.type === 'agent' ? <MarkdownDisplay markdown={message.content} /> : <p>{message.content}</p>}

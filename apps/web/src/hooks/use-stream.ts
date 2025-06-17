@@ -9,9 +9,10 @@ type UseStreamOptions = {
 	url: string;
 	id?: string;
 	onComplete?: () => void;
+	onStream?: (tokens: string) => void;
 };
 
-export const useStream = ({ url, id, onComplete }: UseStreamOptions) => {
+export const useStream = ({ url, id, onComplete, onStream }: UseStreamOptions) => {
 	const safeId = id ?? 'pending';
 	const key = useMemo(() => `stream-${useStreamVersion}:${safeId}`, [safeId]);
 
@@ -32,10 +33,6 @@ export const useStream = ({ url, id, onComplete }: UseStreamOptions) => {
 	const handleToken = useCallback(
 		(e: MessageEvent) =>
 			setTokens((prev) => {
-				console.log('got stuff', e);
-				// console.log(`got message "${e.data}"`, e.data.length);
-
-				console.log('end of text?', e.data === END_OF_TEXT_TOKEN || e.data.includes(END_OF_TEXT_TOKEN));
 				if (e.data === END_OF_TEXT_TOKEN || e.data.includes(END_OF_TEXT_TOKEN)) {
 					stop();
 					localStorage.removeItem(key); // we are done we no more need
@@ -45,6 +42,7 @@ export const useStream = ({ url, id, onComplete }: UseStreamOptions) => {
 
 				const next = prev + e.data;
 				localStorage.setItem(key, next);
+				onStream?.(next);
 				return next;
 			}),
 		[],
@@ -78,7 +76,7 @@ export const useStream = ({ url, id, onComplete }: UseStreamOptions) => {
 	const start = useCallback(() => {
 		if (!url || !id) return; // nothing to stream yet
 		if (eventSourceRef.current) return;
-		console.log('use-stream: start', eventSourceRef.current, tokens.length);
+		console.log('use-stream: start', tokens.length);
 
 		setIsStreaming(true);
 		const src = new EventSource(`${env.VITE_API_URL}${url}?from=${tokens.length}`);
@@ -88,7 +86,7 @@ export const useStream = ({ url, id, onComplete }: UseStreamOptions) => {
 
 	const tryResume = useCallback(async () => {
 		if (!url || !id || eventSourceRef.current) return;
-		console.log('use-stream: tryResume', url, id, eventSourceRef.current);
+		console.log('use-stream: tryResume', url);
 
 		const head = await fetch(`${env.VITE_API_URL}${url}`, { method: 'HEAD' }).catch(() => null);
 		if (head?.status === 200) {
@@ -99,8 +97,6 @@ export const useStream = ({ url, id, onComplete }: UseStreamOptions) => {
 			localStorage.removeItem(key); // session is gone
 		}
 	}, [url, tokens.length, stop]);
-
-	const canStop = eventSourceRef.current !== null;
 
 	// Auto-resume when the key (thread id) changes or on mount
 	useEffect(() => {
@@ -114,5 +110,5 @@ export const useStream = ({ url, id, onComplete }: UseStreamOptions) => {
 		};
 	}, [id]);
 
-	return { controls: { canStop, cancel, start, tryResume }, isStreaming, tokens };
+	return { controls: { cancel, start, tryResume }, isStreaming, tokens };
 };

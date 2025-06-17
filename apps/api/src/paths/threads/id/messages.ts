@@ -73,7 +73,6 @@ export const POST = route(
 	async (req) => {
 		const session = await getSession(req);
 		const json = await req.json();
-		console.log('req.body', json);
 
 		if (!session) return ClientResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -140,7 +139,7 @@ export const POST = route(
 		// if the thread does not have a name, set another job to get it from the LLM
 		console.log('thread', thread, thread.name.trim() === '');
 		if (thread.name.trim() === '') {
-			await generateThreadName(req.params.threadId, message.content);
+			generateThreadName(req.params.threadId, message.content);
 		}
 
 		return ClientResponse.json({

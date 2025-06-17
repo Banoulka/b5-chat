@@ -2,36 +2,43 @@ import type { BaseMessageLike } from '@langchain/core/messages';
 import { messages } from '../../db/schema';
 import { db } from '../../service/db';
 import { utApi } from '../../service/uploadthing';
-import { deleteStreamSession, getEmitter, getStreamSessionContent } from '../stream';
+import { deleteStreamSession, getEmitter, getStreamSessionContent, setEmitterCancelEvent } from '../stream';
 import { getAgent } from './agent';
 import { type ModelId } from './models';
 
 const SYSTEM_PROMPT = `
-You are a helpful assistant. Responses can be in text or markdown format. Try to keep responses short and concise.
-`;
+You are a helpful assistant. Responses can be in text or markdown format. Keep answers short and concise.
+`.trim();
 
 type RunAgentThreadParams = {
 	model: ModelId;
 	threadId: string;
 	userId: string;
+	webSearch?: boolean;
+	reasoning?: boolean;
 };
 
 export const runAgentForThread = async ({ model, threadId, userId }: RunAgentThreadParams) => {
 	const agent = getAgent(model);
+	console.log(`[agent]: got agent for thread: ${threadId} - ${agent.name}`);
 	const conversation = await getConversationToInput(threadId);
+	console.log(`[agent]: got conversation for thread: ${threadId}`);
+
 	const streamId = `thread-${threadId}`;
 	const emitter = getEmitter(streamId);
+	console.log(`[agent]: got emitter for thread: ${threadId}`);
 
 	// Set up the done handler to save the message
 	const onDone = async () => {
-		console.log('Streaming finished for thread', threadId);
+		console.log(`[agent]: streaming finished for thread: ${threadId}`);
 
 		const content = getStreamSessionContent(streamId);
 		if (!content) {
-			console.error('No content found for session', streamId);
+			console.error(`[agent]: no content found for session: ${streamId}`);
 			return;
 		}
 
+		console.log(`[agent]: saving message for thread: ${threadId}`);
 		await db.insert(messages).values({
 			content,
 			threadId,
@@ -40,7 +47,9 @@ export const runAgentForThread = async ({ model, threadId, userId }: RunAgentThr
 			model: model,
 		});
 
+		console.log(`[agent]: removing done listener for thread: ${threadId}`);
 		emitter.removeEventListener('done', onDone);
+		console.log(`[agent]: deleting stream session for thread: ${threadId}`);
 		deleteStreamSession(streamId);
 	};
 
@@ -48,12 +57,17 @@ export const runAgentForThread = async ({ model, threadId, userId }: RunAgentThr
 
 	const streamResponse = async () => {
 		try {
-			const stream = await agent.stream(conversation, { stream_options: { include_usage: true } });
+			console.log(`[agent]: starting stream for thread: ${threadId}`);
+			const stream = await agent.stream(conversation);
+
+			console.log(`[agent]: set emitter cancel event for thread: ${threadId}`);
+			setEmitterCancelEvent(streamId, () => stream.cancel());
 
 			let tokenIndex = 0;
 
 			for await (const chunk of stream) {
 				const token = chunk.content || '';
+
 				if (token) {
 					emitter.dispatchEvent(
 						new CustomEvent('token', {
@@ -69,6 +83,7 @@ export const runAgentForThread = async ({ model, threadId, userId }: RunAgentThr
 			}
 
 			// Emit done event
+			console.log(`[agent]: streamResponse done emitting done event for thread: ${threadId}`);
 			emitter.dispatchEvent(new Event('done'));
 		} catch (error) {
 			console.error('Error in agent streaming:', error);
