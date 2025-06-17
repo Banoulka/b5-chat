@@ -20,14 +20,26 @@ export const useStream = ({ url, id, onComplete, onStream }: UseStreamOptions) =
 	const eventSourceRef = useRef<EventSource | null>(null);
 	const [isStreaming, setIsStreaming] = useState(false);
 
-	// On key changes we need to:
+	// On key/url changes we need to:
 	// - stop any existing event source
 	// - swap out local tokens
 	useEffect(() => {
 		return () => {
 			stop();
-			setTokens('');
 		};
+	}, [key, url]);
+
+	const stop = useCallback(() => {
+		console.log('use-stream: stop for key', key);
+
+		if (eventSourceRef.current) {
+			eventSourceRef.current.removeEventListener('token', handleToken);
+			eventSourceRef.current.close();
+			eventSourceRef.current = null;
+		}
+
+		setIsStreaming(false);
+		setTokens('');
 	}, [key]);
 
 	const handleToken = useCallback(
@@ -45,21 +57,8 @@ export const useStream = ({ url, id, onComplete, onStream }: UseStreamOptions) =
 				onStream?.(next);
 				return next;
 			}),
-		[],
+		[key, stop, onComplete, onStream],
 	);
-
-	const stop = useCallback(() => {
-		console.log('use-stream: stop');
-
-		if (eventSourceRef.current) {
-			eventSourceRef.current.removeEventListener('token', handleToken);
-			eventSourceRef.current.close();
-			eventSourceRef.current = null;
-		}
-
-		setIsStreaming(false);
-		setTokens('');
-	}, [key]);
 
 	const cancel = useCallback(async () => {
 		if (!url || !id) return;
@@ -71,7 +70,7 @@ export const useStream = ({ url, id, onComplete, onStream }: UseStreamOptions) =
 		await fetch(`${env.VITE_API_URL}${url}`, {
 			method: 'DELETE',
 		});
-	}, [key, id, url]);
+	}, [id, url, stop]);
 
 	const start = useCallback(() => {
 		if (!url || !id) return; // nothing to stream yet
@@ -102,13 +101,7 @@ export const useStream = ({ url, id, onComplete, onStream }: UseStreamOptions) =
 	useEffect(() => {
 		tryResume();
 		return () => stop();
-	}, [key]);
-
-	useEffect(() => {
-		return () => {
-			console.log('cleanup stream');
-		};
-	}, [id]);
+	}, [key, tryResume, stop]);
 
 	return { controls: { cancel, start, tryResume }, isStreaming, tokens };
 };

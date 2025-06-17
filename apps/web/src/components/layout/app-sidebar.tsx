@@ -48,13 +48,14 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
 	return (
 		<SidebarProvider defaultOpen={defaultOpen} defaultWidth={defaultWidth}>
+			<div className="bg-secondary pointer-events-auto fixed top-2 left-2 z-[9999] m-1 flex flex-row gap-0.5 rounded">
+				<SidebarTrigger />
+			</div>
 			<Sidebar>
 				<SidebarHeader>
 					<h1 className="m-1 w-full text-center text-lg font-light">b5.chat</h1>
 				</SidebarHeader>
-				<div className="bg-secondary pointer-events-auto fixed top-2 left-2 z-50 m-1 flex flex-row gap-0.5 rounded">
-					<SidebarTrigger />
-				</div>
+
 				<SidebarContent>
 					<SidebarGroup>
 						<Link to="/">New Chat</Link>

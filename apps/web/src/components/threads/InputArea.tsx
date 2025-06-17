@@ -125,7 +125,7 @@ const InputArea = ({ stream, inputKey, onSendNewMessage }: MessageInputProps) =>
 								variant="default"
 								onPressedChange={setWebSearch}
 							>
-								Search
+								<span className="hidden md:block">Search</span>
 								<LucideGlobe />
 							</Toggle>
 						</TooltipTrigger>
@@ -142,7 +142,7 @@ const InputArea = ({ stream, inputKey, onSendNewMessage }: MessageInputProps) =>
 								variant="default"
 								onPressedChange={setReasoning}
 							>
-								Reasoning
+								<span className="hidden md:block">Reasoning</span>
 								<LucideBrain />
 							</Toggle>
 						</TooltipTrigger>
