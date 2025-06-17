@@ -1,10 +1,11 @@
-import type { APIThread, APIThreadMessage } from '@b5-chat/common';
+import type { API_ThreadsResponse, APIThread, APIThreadMessage } from '@b5-chat/common';
 import type { CreateMessageSchema } from '@b5-chat/common/schemas';
 
 import { api } from '@/components/auth/AuthContext';
+import { getThreadOpts } from '@/hooks/queries';
 
 export interface ThreadPersistence {
-	listThreads(): Promise<APIThread[]>;
+	listThreads(): Promise<API_ThreadsResponse>;
 	createMessage(threadId: string, message: CreateMessageSchema): Promise<void>;
 	listMessagesForThread(threadId: string, from: number | null): Promise<APIThreadMessage[]>;
 	createNewThread(): Promise<APIThread>;
@@ -31,12 +32,12 @@ export const localStoragePersistence: ThreadPersistence = {
 		existingMessages.push(newMessage);
 		localStorage.setItem(messagesKey, JSON.stringify(existingMessages));
 
-		// Update the thread's last message timestamp
+		// update the thread's last message timestamp
 		const threads = await this.listThreads();
-		const threadIndex = threads.findIndex((t) => t.id === threadId);
+		const threadIndex = threads.data.findIndex((t) => t.id === threadId);
 
-		if (threadIndex !== -1 && threads[threadIndex]) {
-			threads[threadIndex].updatedAt = new Date().toISOString();
+		if (threadIndex !== -1 && threads.data[threadIndex]) {
+			threads.data[threadIndex].updatedAt = new Date().toISOString();
 			localStorage.setItem(THREADS_KEY, JSON.stringify(threads));
 		}
 	},
@@ -51,7 +52,7 @@ export const localStoragePersistence: ThreadPersistence = {
 			updatedAt: new Date().toISOString(),
 		};
 
-		threads.push(newThread);
+		threads.data.push(newThread);
 		localStorage.setItem(THREADS_KEY, JSON.stringify(threads));
 
 		return newThread;
@@ -68,22 +69,37 @@ export const localStoragePersistence: ThreadPersistence = {
 		return messages.slice(from);
 	},
 
-	async listThreads(): Promise<APIThread[]> {
+	async listThreads(): Promise<API_ThreadsResponse> {
 		const data = localStorage.getItem(THREADS_KEY);
-		return data ? JSON.parse(data) : [];
+		return data ? JSON.parse(data) : { data: [], meta: { nextCursor: null, prevCursor: null, total: 0 } };
 	},
 };
 
 export const dbPersistence: ThreadPersistence = {
-	async addThread(thread) {
-		await api<APIThread>('/threads', { method: 'POST' });
+	async createMessage(threadId: string, message: CreateMessageSchema): Promise<void> {
+		await api(`/threads/${threadId}/messages`, {
+			body: JSON.stringify(message),
+			method: 'POST',
+		});
 	},
-	async createNewThread() {
-		const thread = await api<APIThread>('/threads', { method: 'POST' });
-		return thread;
+
+	async createNewThread(): Promise<APIThread> {
+		const response = await api<{ thread: APIThread }>('/threads', {
+			body: JSON.stringify({}),
+			method: 'POST',
+		});
+
+		return response.thread;
 	},
-	async listThreads() {
-		const res = await fetch('/api/threads');
-		return res.json();
+
+	async listMessagesForThread(threadId: string, from: number | null): Promise<APIThreadMessage[]> {
+		const url = from !== null ? `/threads/${threadId}/messages?from=${from}` : `/threads/${threadId}/messages`;
+
+		const response = await api<{ messages: APIThreadMessage[] }>(url);
+		return response.messages;
+	},
+
+	async listThreads(): Promise<API_ThreadsResponse> {
+		return await getThreadOpts.queryFn();
 	},
 };

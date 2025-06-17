@@ -108,7 +108,11 @@ const MessageDisplay = ({ message }: { message: MessageData }) => {
 						: 'w-full bg-transparent',
 				)}
 			>
-				{message.type === 'agent' ? <MarkdownDisplay markdown={message.content} /> : <p>{message.content}</p>}
+				{message.type === 'agent' ? (
+					<MarkdownDisplay markdown={message.content} />
+				) : (
+					<p className="whitespace-pre-wrap">{message.content}</p>
+				)}
 				<div className="flex flex-row gap-4">
 					{attachments.map((file) => {
 						const isImage = file.name?.match(/\.(jpeg|jpg|png|gif|webp|svg)$/i);
