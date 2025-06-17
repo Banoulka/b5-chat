@@ -6,7 +6,6 @@ export const errorHandler: Middleware = async (c, next) => {
 	try {
 		return await next(c);
 	} catch (error) {
-		console.log('error', error);
 		if (error instanceof ClientError)
 			return ClientResponse.json({ message: error.message }, { status: error.status });
 

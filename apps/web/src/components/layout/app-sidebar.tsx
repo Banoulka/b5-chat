@@ -21,16 +21,14 @@ import {
 	SidebarRail,
 	SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { getAgentOpts, getThreadOpts } from '@/hooks/queries';
+import { getThreadOpts } from '@/hooks/queries';
 
 import { useAuth } from '../auth/AuthContext';
 
 export function AppSidebar({ children }: { children: React.ReactNode }) {
-	const { session, isSignedIn } = useAuth();
 	const params = useParams({ from: '/threads/$threadId', shouldThrow: false });
 	console.log('threadId', params?.threadId);
 
-	const { data: agents } = useQuery(getAgentOpts);
 	const { data: threads } = useQuery(getThreadOpts);
 
 	// Load default state from localStorage
@@ -60,6 +58,9 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 				</div>
 				<SidebarContent>
 					<SidebarGroup>
+						<Link to="/">New Chat</Link>
+					</SidebarGroup>
+					<SidebarGroup>
 						<SidebarGroupLabel>Threads</SidebarGroupLabel>
 						<SidebarGroupContent>
 							{threads?.data.map((thread) => (
@@ -79,23 +80,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
 				<SidebarFooter>
 					<SidebarContent>
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<SidebarMenuButton>{isSignedIn ? session.user.name : 'Account'}</SidebarMenuButton>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent>
-								<DropdownMenuItem>
-									<span>
-										<Link to="/settings">Settings</Link>
-									</span>
-								</DropdownMenuItem>
-								<DropdownMenuItem>
-									<span>
-										{isSignedIn ? <Link to="/logout">Logout</Link> : <Link to="/login">Login</Link>}
-									</span>
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
+						<AuthButton />
 					</SidebarContent>
 				</SidebarFooter>
 				<SidebarRail />
@@ -104,3 +89,25 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 		</SidebarProvider>
 	);
 }
+
+const AuthButton = () => {
+	const { isSignedIn, session, signOut, signIn } = useAuth();
+
+	return (
+		<DropdownMenu>
+			<DropdownMenuTrigger asChild>
+				<SidebarMenuButton>{isSignedIn ? session.user.name : 'Account'}</SidebarMenuButton>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent>
+				<DropdownMenuItem>
+					<Link to="/settings">Settings</Link>
+				</DropdownMenuItem>
+				{isSignedIn ? (
+					<DropdownMenuItem onClick={signOut}>Logout</DropdownMenuItem>
+				) : (
+					<DropdownMenuItem onClick={signIn}>Login</DropdownMenuItem>
+				)}
+			</DropdownMenuContent>
+		</DropdownMenu>
+	);
+};

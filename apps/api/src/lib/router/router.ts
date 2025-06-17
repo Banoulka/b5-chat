@@ -72,6 +72,7 @@ export const router = async () => {
 	const authRoutes = {
 		'/auth/*': (req: Bun.BunRequest<'/auth/*'>) =>
 			applyMiddlewareToRequest(req, [...globalMiddleware], async (req: Bun.BunRequest<'/auth/*'>) => {
+				console.log('authRoutes', req.method, req.url);
 				const response = await authHandler(req);
 				setCustomHeaders(response.headers);
 				return response;
@@ -113,7 +114,7 @@ export const router = async () => {
 			}),
 	};
 
-	return { ...routeObj, ...authRoutes, ...notFoundRoute, ...redirectHomeUrl, ...uploadThingRoutes } as Routes;
+	return { ...authRoutes, ...redirectHomeUrl, ...uploadThingRoutes, ...routeObj, ...notFoundRoute } as Routes;
 };
 
 export const printRoutes = (routes: Routes) => {
