@@ -127,14 +127,11 @@ export const POST = route(
 		});
 
 		// Kick off the stream in the background
-		// startTestStream(`thread-${req.params.threadId}`);
-		setTimeout(() => {
-			runAgentForThread({
-				model: modelId,
-				threadId: req.params.threadId,
-				userId: session.user.id,
-			});
-		}, 1);
+		runAgentForThread({
+			model: modelId,
+			threadId: req.params.threadId,
+			userId: session.user.id,
+		});
 
 		// if the thread does not have a name, set another job to get it from the LLM
 		console.log('thread', thread, thread.name.trim() === '');

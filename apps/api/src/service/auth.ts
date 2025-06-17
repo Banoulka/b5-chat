@@ -1,17 +1,40 @@
 import { Auth, createActionURL, setEnvDefaults, type AuthConfig } from '@auth/core';
+import CredentialsProvider from '@auth/core/providers/credentials';
 import GitHub from '@auth/core/providers/github';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
 import type { Session } from '@b5-chat/common';
 import { env } from '../env';
 import { db } from './db';
 
-const authConfig: AuthConfig = {
-	providers: [
-		GitHub({
-			clientId: env.GITHUB_CLIENT_ID,
-			clientSecret: env.GITHUB_CLIENT_SECRET,
+const isDev = import.meta.env.NODE_ENV === 'development';
+
+const providers: AuthConfig['providers'] = [
+	GitHub({
+		clientId: env.GITHUB_CLIENT_ID,
+		clientSecret: env.GITHUB_CLIENT_SECRET,
+	}),
+];
+
+if (isDev) {
+	providers.push(
+		CredentialsProvider({
+			name: 'Credentials',
+			credentials: {
+				username: { label: 'Username', type: 'text', placeholder: 'jsmith' },
+				password: { label: 'Password', type: 'password' },
+			},
+			async authorize(credentials) {
+				if (credentials.username === 'jsmith' && credentials.password === 'password') {
+					return { id: '1', name: 'John Smith' };
+				}
+				return null;
+			},
 		}),
-	],
+	);
+}
+
+const authConfig: AuthConfig = {
+	providers,
 	adapter: DrizzleAdapter(db),
 	trustHost: true,
 	secret: env.AUTH_SECRET,

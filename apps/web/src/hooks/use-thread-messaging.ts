@@ -140,10 +140,12 @@ export const useThreadMessaging = (initialThreadId?: string) => {
 		[threadId, createThread, navigate, queryClient],
 	);
 
+	const streamUrl = useMemo(() => (threadId ? `/threads/${threadId}/stream` : ''), [threadId]);
+
 	const stream = useStream({
 		id: threadId,
 		onComplete: () => threadId && queryClient.invalidateQueries(getMessageOpts(threadId)),
-		url: threadId ? `/threads/${threadId}/stream` : '',
+		url: streamUrl,
 	});
 
 	return { sendMessage: handleSendMessage, stream, thread, threadErr, threadId, threadLoading };

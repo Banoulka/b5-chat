@@ -1,5 +1,5 @@
 import { END_OF_TEXT_TOKEN } from '@b5-chat/common';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { env } from '@/env';
 
@@ -20,47 +20,34 @@ export const useStream = ({ url, id, onComplete, onStream }: UseStreamOptions) =
 	const eventSourceRef = useRef<EventSource | null>(null);
 	const [isStreaming, setIsStreaming] = useState(false);
 
-	// On key/url changes we need to:
-	// - stop any existing event source
-	// - swap out local tokens
-	useEffect(() => {
-		return () => {
-			stop();
-		};
-	}, [key, url]);
-
-	const stop = useCallback(() => {
+	const stop = () => {
 		console.log('use-stream: stop for key', key);
 
 		if (eventSourceRef.current) {
-			eventSourceRef.current.removeEventListener('token', handleToken);
 			eventSourceRef.current.close();
 			eventSourceRef.current = null;
 		}
 
 		setIsStreaming(false);
 		setTokens('');
-	}, [key]);
+	};
 
-	const handleToken = useCallback(
-		(e: MessageEvent) =>
-			setTokens((prev) => {
-				if (e.data === END_OF_TEXT_TOKEN || e.data.includes(END_OF_TEXT_TOKEN)) {
-					stop();
-					localStorage.removeItem(key); // we are done we no more need
-					onComplete?.();
-					return prev;
-				}
+	const handleToken = (e: MessageEvent) =>
+		setTokens((prev) => {
+			if (e.data === END_OF_TEXT_TOKEN || e.data.includes(END_OF_TEXT_TOKEN)) {
+				stop();
+				localStorage.removeItem(key); // we are done we no more need
+				onComplete?.();
+				return prev;
+			}
 
-				const next = prev + e.data;
-				localStorage.setItem(key, next);
-				onStream?.(next);
-				return next;
-			}),
-		[key, stop, onComplete, onStream],
-	);
+			const next = prev + e.data;
+			localStorage.setItem(key, next);
+			onStream?.(next);
+			return next;
+		});
 
-	const cancel = useCallback(async () => {
+	const cancel = async () => {
 		if (!url || !id) return;
 		console.log('use-stream: cancel');
 
@@ -70,9 +57,9 @@ export const useStream = ({ url, id, onComplete, onStream }: UseStreamOptions) =
 		await fetch(`${env.VITE_API_URL}${url}`, {
 			method: 'DELETE',
 		});
-	}, [id, url, stop]);
+	};
 
-	const start = useCallback(() => {
+	const start = () => {
 		if (!url || !id) return; // nothing to stream yet
 		if (eventSourceRef.current) return;
 		console.log('use-stream: start', tokens.length);
@@ -81,9 +68,9 @@ export const useStream = ({ url, id, onComplete, onStream }: UseStreamOptions) =
 		const src = new EventSource(`${env.VITE_API_URL}${url}?from=${tokens.length}`);
 		eventSourceRef.current = src;
 		src.addEventListener('token', handleToken);
-	}, [url, id, tokens.length, handleToken]);
+	};
 
-	const tryResume = useCallback(async () => {
+	const tryResume = async () => {
 		if (!url || !id || eventSourceRef.current) return;
 		console.log('use-stream: tryResume', url);
 
@@ -95,13 +82,14 @@ export const useStream = ({ url, id, onComplete, onStream }: UseStreamOptions) =
 		} else {
 			localStorage.removeItem(key); // session is gone
 		}
-	}, [url, tokens.length, stop]);
+	};
 
 	// Auto-resume when the key (thread id) changes or on mount
 	useEffect(() => {
+		console.log('use-stream: useEffect key change', key, url);
 		tryResume();
 		return () => stop();
-	}, [key, tryResume, stop]);
+	}, [key, url]);
 
 	return { controls: { cancel, start, tryResume }, isStreaming, tokens };
 };
