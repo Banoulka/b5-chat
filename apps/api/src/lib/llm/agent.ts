@@ -12,8 +12,9 @@ export const orClient = new OpenAI({
 
 const modelCache = new Map<string, ChatOpenAI>();
 
-export const getAgent = (model: string) => {
-	const cachedModel = modelCache.get(model);
+export const getAgent = (model: string, reasoning: boolean) => {
+	const cacheKey = `${model}-${reasoning ? 'r' : 'nr'}`;
+	const cachedModel = modelCache.get(cacheKey);
 	if (cachedModel) return cachedModel;
 
 	const newModel = new ChatOpenAI({
@@ -28,10 +29,11 @@ export const getAgent = (model: string) => {
 				'X-Title': 'B5-Chat',
 			},
 		},
+		reasoning: reasoning ? { effort: 'medium', summary: 'concise' } : undefined,
 		// TODO: Options like max tokens? etc
 	});
 
-	modelCache.set(model, newModel);
+	modelCache.set(cacheKey, newModel);
 
 	return newModel;
 };

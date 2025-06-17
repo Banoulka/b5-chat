@@ -18,8 +18,8 @@ type RunAgentThreadParams = {
 	reasoning?: boolean;
 };
 
-export const runAgentForThread = async ({ model, threadId, userId }: RunAgentThreadParams) => {
-	const agent = getAgent(model);
+export const runAgentForThread = async ({ model, threadId, userId, reasoning }: RunAgentThreadParams) => {
+	const agent = getAgent(model, reasoning ?? false);
 	console.log(`[agent]: got agent for thread: ${threadId} - ${agent.name}`);
 	const conversation = await getConversationToInput(threadId);
 	console.log(`[agent]: got conversation for thread: ${threadId}`);

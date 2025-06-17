@@ -17,7 +17,6 @@ export const Route = createFileRoute('/threads/$threadId')({
 function RouteComponent() {
 	const { threadId } = Route.useParams();
 	const { thread, threadLoading, threadErr, sendMessage, stream } = useThreadMessaging(threadId);
-	console.log('thread', thread?.id, thread?.name);
 
 	const bottomRef = useRef<HTMLDivElement>(null);
 

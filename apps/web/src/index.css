@@ -58,16 +58,6 @@
 		@apply border-l-4 border-border pl-4 italic text-muted-foreground my-4;
 	}
 
-	pre {
-		@apply bg-muted text-foreground p-4 rounded-lg overflow-auto mb-4;
-	}
-	code {
-		@apply bg-muted text-red-600 px-1 py-0.5 rounded dark:text-red-400;
-	}
-	pre code {
-		@apply bg-transparent p-0;
-	}
-
 	img {
 		@apply max-w-full h-auto my-4 rounded-lg shadow;
 	}
@@ -84,11 +74,5 @@
 	}
 	td {
 		@apply border-b px-4 py-2;
-	}
-}
-
-.dark .markdown-components {
-	pre {
-		@apply bg-gray-800;
 	}
 }
