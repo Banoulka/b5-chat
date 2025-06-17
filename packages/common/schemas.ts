@@ -11,6 +11,8 @@ export const createMessageSchema = z.object({
 			}),
 		)
 		.optional(),
+	reasoning: z.boolean().optional(),
+	webSearch: z.boolean().optional(),
 });
 
 export type CreateMessageSchema = z.infer<typeof createMessageSchema>;

@@ -1,16 +1,14 @@
 import { type CreateMessageSchema } from '@b5-chat/common/schemas';
-import { type InfiniteData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { useRef } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 
-import { api } from '@/components/auth/AuthContext';
 import { UploaderContextProvider } from '@/components/files/UploaderContext';
+import FullScreenSpinner from '@/components/layout/full-screen-spinner';
+import NotFound from '@/components/layout/not-found';
 import InputArea from '@/components/threads/InputArea';
-import MessageList, { type LocalMessage, type QueryTypeMessageData } from '@/components/threads/MessageList';
-import { getMessageOpts, getThreadOpts } from '@/hooks/queries';
+import MessageList from '@/components/threads/MessageList';
 import { useSize } from '@/hooks/use-size';
-import { useStream } from '@/hooks/use-stream';
+import { useThreadMessaging } from '@/hooks/use-thread-messaging';
 
 export const Route = createFileRoute('/threads/$threadId')({
 	component: RouteComponent,
@@ -18,105 +16,33 @@ export const Route = createFileRoute('/threads/$threadId')({
 
 function RouteComponent() {
 	const { threadId } = Route.useParams();
-	const queryClient = useQueryClient();
-
-	const {
-		data: thread,
-		isLoading,
-		error,
-	} = useQuery({
-		...getThreadOpts,
-		select: (data) => data.data.find((thread) => thread.id === threadId),
-	});
-
-	const { mutateAsync: sendMessage } = useMutation<
-		unknown,
-		unknown,
-		CreateMessageSchema,
-		{ previousData: InfiniteData<QueryTypeMessageData> | undefined }
-	>({
-		mutationFn: ({ content, modelId, attachments }) =>
-			api(`/threads/${threadId}/messages`, {
-				body: JSON.stringify({ attachments, content, modelId }),
-				method: 'POST',
-			}),
-		onError: (_err, _variables, context) => {
-			// rollback data
-			if (context?.previousData)
-				queryClient.setQueryData(getMessageOpts(threadId).queryKey, context.previousData);
-		},
-		onMutate: async ({ content }) => {
-			await queryClient.cancelQueries(getMessageOpts(threadId));
-
-			const previousData = queryClient.getQueryData<InfiniteData<QueryTypeMessageData>>(
-				getMessageOpts(threadId).queryKey,
-			);
-
-			const localMessage: LocalMessage = {
-				content,
-				localId: uuidv4(),
-				type: 'local',
-			};
-
-			queryClient.setQueryData<InfiniteData<QueryTypeMessageData>>(getMessageOpts(threadId).queryKey, (old) => {
-				if (!old) {
-					return {
-						pageParams: [],
-						pages: [
-							{
-								data: [localMessage],
-								meta: { nextCursor: null },
-							},
-						],
-					};
-				}
-
-				return {
-					...old,
-					pages: old.pages.map((page, idx) => {
-						if (idx !== old.pages.length - 1) return page;
-						return {
-							...page,
-							data: [...page.data, localMessage],
-						};
-					}),
-				};
-			});
-
-			return { previousData };
-		},
-		onSettled: () => {
-			queryClient.invalidateQueries(getMessageOpts(threadId));
-		},
-	});
+	const { thread, threadLoading, threadErr, sendMessage, stream } = useThreadMessaging(threadId);
 
 	const bottomRef = useRef<HTMLDivElement>(null);
-
-	const stream = useStream({
-		id: threadId,
-		onComplete: () => {
-			// TODO: Fix the "Flashing" issue when the agent message is added to the query data
-			// and simultaneously removes the streaming message.
-			// invalidate the messages query. (should fetch the new agent message properly?)
-			queryClient.invalidateQueries(getMessageOpts(threadId));
-		},
-		url: `/threads/${threadId}/stream`,
-	});
 
 	const { size, sizeRef } = useSize(bottomRef, { defaultSize: { height: 100, width: 0 } });
 	const messageListRef = useRef<HTMLDivElement>(null);
 
-	if (error) return <div>Error: {error.message}</div>;
-	if (isLoading) return <div>Loading...</div>;
-	if (!thread) return <div>Not found</div>;
+	console.log('thread', thread, threadId);
+
+	if (threadErr) return <div>Error: {threadErr.message}</div>;
+	if (threadLoading) return <FullScreenSpinner />;
+	if (!thread) return <NotFound />;
 
 	const handleSendNewMessage = async (data: CreateMessageSchema) => {
 		await sendMessage(data);
 
 		stream.controls.start();
 
-		if (messageListRef.current) messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
+		// scroll to bottom
+		if (messageListRef.current) {
+			messageListRef.current.scrollTo({
+				behavior: 'smooth',
+				top: messageListRef.current.scrollHeight,
+			});
+		}
 	};
+
 	return (
 		<UploaderContextProvider>
 			<MessageList
@@ -127,7 +53,7 @@ function RouteComponent() {
 				stream={stream}
 			/>
 			<div ref={sizeRef}>
-				<InputArea threadId={threadId} key={threadId} onSendNewMessage={handleSendNewMessage} stream={stream} />
+				<InputArea key={threadId} inputKey={threadId} onSendNewMessage={handleSendNewMessage} stream={stream} />
 			</div>
 		</UploaderContextProvider>
 	);

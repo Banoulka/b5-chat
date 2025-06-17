@@ -12,8 +12,6 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as SettingsImport } from './routes/settings'
-import { Route as LogoutImport } from './routes/logout'
-import { Route as LoginImport } from './routes/login'
 import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
 import { Route as ThreadsThreadIdImport } from './routes/threads/$threadId'
@@ -23,18 +21,6 @@ import { Route as ThreadsThreadIdImport } from './routes/threads/$threadId'
 const SettingsRoute = SettingsImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const LogoutRoute = LogoutImport.update({
-  id: '/logout',
-  path: '/logout',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const LoginRoute = LoginImport.update({
-  id: '/login',
-  path: '/login',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -74,20 +60,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutImport
       parentRoute: typeof rootRoute
     }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginImport
-      parentRoute: typeof rootRoute
-    }
-    '/logout': {
-      id: '/logout'
-      path: '/logout'
-      fullPath: '/logout'
-      preLoaderRoute: typeof LogoutImport
-      parentRoute: typeof rootRoute
-    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -110,8 +82,6 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/login': typeof LoginRoute
-  '/logout': typeof LogoutRoute
   '/settings': typeof SettingsRoute
   '/threads/$threadId': typeof ThreadsThreadIdRoute
 }
@@ -119,8 +89,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/login': typeof LoginRoute
-  '/logout': typeof LogoutRoute
   '/settings': typeof SettingsRoute
   '/threads/$threadId': typeof ThreadsThreadIdRoute
 }
@@ -129,39 +97,22 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/login': typeof LoginRoute
-  '/logout': typeof LogoutRoute
   '/settings': typeof SettingsRoute
   '/threads/$threadId': typeof ThreadsThreadIdRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/about'
-    | '/login'
-    | '/logout'
-    | '/settings'
-    | '/threads/$threadId'
+  fullPaths: '/' | '/about' | '/settings' | '/threads/$threadId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/login' | '/logout' | '/settings' | '/threads/$threadId'
-  id:
-    | '__root__'
-    | '/'
-    | '/about'
-    | '/login'
-    | '/logout'
-    | '/settings'
-    | '/threads/$threadId'
+  to: '/' | '/about' | '/settings' | '/threads/$threadId'
+  id: '__root__' | '/' | '/about' | '/settings' | '/threads/$threadId'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
-  LoginRoute: typeof LoginRoute
-  LogoutRoute: typeof LogoutRoute
   SettingsRoute: typeof SettingsRoute
   ThreadsThreadIdRoute: typeof ThreadsThreadIdRoute
 }
@@ -169,8 +120,6 @@ export interface RootRouteChildren {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
-  LoginRoute: LoginRoute,
-  LogoutRoute: LogoutRoute,
   SettingsRoute: SettingsRoute,
   ThreadsThreadIdRoute: ThreadsThreadIdRoute,
 }
@@ -187,8 +136,6 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/about",
-        "/login",
-        "/logout",
         "/settings",
         "/threads/$threadId"
       ]
@@ -198,12 +145,6 @@ export const routeTree = rootRoute
     },
     "/about": {
       "filePath": "about.tsx"
-    },
-    "/login": {
-      "filePath": "login.tsx"
-    },
-    "/logout": {
-      "filePath": "logout.tsx"
     },
     "/settings": {
       "filePath": "settings.tsx"

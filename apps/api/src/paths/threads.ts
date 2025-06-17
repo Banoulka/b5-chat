@@ -1,4 +1,5 @@
-import type { API_ThreadsResponse } from '@b5-chat/common';
+import type { API_ThreadsResponse, APIThread } from '@b5-chat/common';
+import { threads } from '../db/schema';
 import { ClientResponse } from '../lib/ClientResponse';
 import { auth } from '../lib/middleware/auth';
 import { route } from '../lib/router/route';
@@ -21,6 +22,27 @@ export const GET = route(
 				total: threads.length,
 			},
 		} satisfies API_ThreadsResponse);
+	},
+	[auth],
+);
+
+export const POST = route(
+	'/threads',
+	async () => {
+		const thread = (
+			await db
+				.insert(threads)
+				.values({
+					name: '', // blank name to start with
+				})
+				.returning()
+		)[0]!;
+
+		return ClientResponse.json({
+			...thread,
+			createdAt: thread.createdAt.toISOString(),
+			updatedAt: thread.updatedAt.toISOString(),
+		} satisfies APIThread);
 	},
 	[auth],
 );

@@ -62,15 +62,16 @@ const MessageList = ({ bottomRefHeight, threadId, stream, ref }: Props) => {
 
 	const mergedRefs = useMemo(() => mergeRefs([scrollRef, ref]), [scrollRef, ref]);
 
+	const shouldShowSkeleton = !isLoading && isFetching && isAtTopRef.current;
+
 	return (
 		<div
 			style={{ height: `calc(100vh - ${bottomRefHeight}px)` }}
-			className="bg-secondary dark:bg-background flex h-full w-full flex-col overflow-y-auto pb-4"
+			className="bg-secondary dark:bg-background flex h-full w-full flex-col overflow-y-auto pt-4"
 			ref={mergedRefs}
 		>
 			{isFetchPreviousPageError && <div>Error</div>}
-			{isFetching &&
-				isAtTopRef.current &&
+			{shouldShowSkeleton &&
 				new Array(10).fill(0).map((_, index) => (
 					<div key={index} className="m-2 mx-auto flex w-[70%] flex-col items-end">
 						<Skeleton className={cn('bg-muted dark:bg-muted/40 m-2 flex w-full flex-col rounded p-4')} />

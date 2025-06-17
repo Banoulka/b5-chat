@@ -3,6 +3,7 @@ import type { CreateMessageSchema } from '@b5-chat/common/schemas';
 import { useQuery } from '@tanstack/react-query';
 import { useLocalStorage } from '@uidotdev/usehooks';
 import { LucideBrain, LucideGlobe, LucideImage, LucideInfo, LucidePaperclip, SendHorizontal } from 'lucide-react';
+import { useMemo } from 'react';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { getModelCatalogueOpts } from '@/hooks/queries';
@@ -20,22 +21,37 @@ import { Badge as ShadBadge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Combobox } from '../ui/combobox';
 import { Textarea } from '../ui/textarea';
+import { Toggle } from '../ui/toggle';
 
 type MessageInputProps = {
-	threadId?: string;
+	inputKey?: string;
 	ref?: React.RefObject<HTMLDivElement>;
 	onSendNewMessage?: (data: CreateMessageSchema) => void;
 	stream: ReturnType<typeof useStream>;
 };
 
-const InputArea = ({ stream, threadId, onSendNewMessage }: MessageInputProps) => {
+const InputArea = ({ stream, inputKey, onSendNewMessage }: MessageInputProps) => {
 	const { data: modelCatalogue } = useQuery(getModelCatalogueOpts);
 	const { readyFiles, clearFiles } = useUploaderContext();
 	const [model, setModel] = useLocalStorage(
-		`last-model-${threadId}`,
+		`last-model-${inputKey}`,
 		modelCatalogue?.defaultModel ?? 'openai/gpt-4.1',
 	);
-	const [content, setContent] = useLocalStorage(`last-input-${threadId}`, '');
+	const [content, setContent] = useLocalStorage(`last-input-${inputKey}`, '');
+	const [reasoning, setReasoning] = useLocalStorage(`last-reasoning-${inputKey}`, false);
+	const [webSearch, setWebSearch] = useLocalStorage(`last-web-search-${inputKey}`, false);
+
+	const selectedModel = useMemo(() => modelCatalogue?.models.find((m) => m.id === model), [model, modelCatalogue]);
+
+	const supportedCapabilities = useMemo(
+		() => ({
+			file: selectedModel?.architecture.input_modalities.includes('file') ?? false,
+			image: selectedModel?.architecture.input_modalities.includes('image') ?? false,
+			reasoning: selectedModel?.supported_parameters.includes('reasoning') ?? false,
+			webSearch: selectedModel?.supported_parameters.includes('web_search_options') ?? false,
+		}),
+		[selectedModel],
+	);
 
 	const handleSend = () => {
 		if (content.trim() === '') return;
@@ -44,6 +60,8 @@ const InputArea = ({ stream, threadId, onSendNewMessage }: MessageInputProps) =>
 			attachments: readyFiles.map((file) => ({ key: file.key, name: file.name, url: file.url })),
 			content,
 			modelId: model,
+			reasoning: supportedCapabilities.reasoning ? reasoning : undefined,
+			webSearch: supportedCapabilities.webSearch ? webSearch : undefined,
 		});
 		setContent('');
 		clearFiles();
@@ -65,7 +83,7 @@ const InputArea = ({ stream, threadId, onSendNewMessage }: MessageInputProps) =>
 					}
 				}}
 			/>
-			<div className="flex items-center">
+			<div className="flex items-center gap-2">
 				<Combobox
 					options={
 						modelCatalogue?.models
@@ -83,11 +101,49 @@ const InputArea = ({ stream, threadId, onSendNewMessage }: MessageInputProps) =>
 					onChange={setModel}
 				/>
 
-				<UploaderButton />
+				{supportedCapabilities.file ? (
+					<UploaderButton type="file" />
+				) : supportedCapabilities.image ? (
+					<UploaderButton type="image" />
+				) : null}
+
+				{supportedCapabilities.webSearch && (
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Toggle
+								className="h-[32px]"
+								pressed={webSearch}
+								variant="default"
+								onPressedChange={setWebSearch}
+							>
+								Search
+								<LucideGlobe />
+							</Toggle>
+						</TooltipTrigger>
+						<TooltipContent>{webSearch ? 'Disable' : 'Enable'} web search</TooltipContent>
+					</Tooltip>
+				)}
+
+				{supportedCapabilities.reasoning && (
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Toggle
+								className="h-[32px]"
+								pressed={reasoning}
+								variant="default"
+								onPressedChange={setReasoning}
+							>
+								Reasoning
+								<LucideBrain />
+							</Toggle>
+						</TooltipTrigger>
+						<TooltipContent>{reasoning ? 'Disable' : 'Enable'} reasoning</TooltipContent>
+					</Tooltip>
+				)}
 
 				<Tooltip>
 					<TooltipTrigger asChild>
-						<Button disabled={stream.isStreaming} className="mt-2 ml-auto" size="icon" onClick={handleSend}>
+						<Button disabled={stream.isStreaming} className="ml-auto" size="icon" onClick={handleSend}>
 							<SendHorizontal />
 						</Button>
 					</TooltipTrigger>
@@ -151,7 +207,7 @@ const ModelSelectItem = ({ model, isSelected }: { model: ModelCard; isSelected: 
 						<LucideGlobe />
 					</ShadBadge>
 				</TooltipTrigger>
-				<TooltipContent>Supports internet searching</TooltipContent>
+				<TooltipContent>Supports web searching</TooltipContent>
 			</Tooltip>
 		),
 	};

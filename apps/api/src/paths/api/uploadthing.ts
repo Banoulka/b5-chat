@@ -6,8 +6,38 @@ import { getSession } from '../../service/auth';
 import { f, type AdapterArgs } from '../../service/uploadthing';
 
 const router = {
+	fileUploader: f({
+		pdf: { maxFileSize: '4MB', maxFileCount: 4 },
+		image: { maxFileSize: '4MB', maxFileCount: 4 },
+		text: { maxFileCount: 4 },
+	})
+		.middleware(async (opts) => {
+			// TODO: JWT from header
+			const session = await getSession(opts.req);
+
+			// if (!session?.user) throw new UnauthorizedError('Unauthorized');
+
+			return { session };
+		})
+		.onUploadError((opts) => {
+			console.log('onUploadError', opts.error);
+			opts.req;
+			//   ^? BunRequest
+			opts.server;
+			//   ^? Server
+		})
+		.onUploadComplete(async (opts) => {
+			console.log('onUploadComplete', opts.file);
+			// await db.insert(messages).values({
+			// 	content: '',
+			// });
+			opts.req;
+			//   ^? BunRequest
+			opts.server;
+			//   ^? Server
+		}),
 	imageUploader: f({
-		image: { maxFileSize: '8MB' },
+		image: { maxFileSize: '8MB', maxFileCount: 5 },
 	})
 		.middleware(async (opts) => {
 			// TODO: JWT from header
