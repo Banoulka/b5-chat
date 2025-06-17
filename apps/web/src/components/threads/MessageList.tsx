@@ -90,6 +90,8 @@ const MessageList = ({ bottomRefHeight, threadId, stream, ref }: Props) => {
 };
 
 const MessageDisplay = ({ message }: { message: MessageData }) => {
+	const attachments = (message as any).attachments as { key: string; name: string; url?: string }[] | undefined;
+
 	return (
 		<div
 			className="m-2 mx-auto flex w-[70%] flex-col items-end"
@@ -104,6 +106,18 @@ const MessageDisplay = ({ message }: { message: MessageData }) => {
 				)}
 			>
 				{message.type === 'agent' ? <MarkdownDisplay markdown={message.content} /> : <p>{message.content}</p>}
+				{attachments &&
+					attachments.map((file) => {
+						const isImage = file.url?.match(/\.(jpeg|jpg|png|gif|webp|svg)$/i);
+						return isImage && file.url ? (
+							<img
+								key={file.key}
+								src={file.url}
+								alt={file.name}
+								className="mt-2 max-w-xs rounded object-cover shadow"
+							/>
+						) : null;
+					})}
 			</div>
 		</div>
 	);
