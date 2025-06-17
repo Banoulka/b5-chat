@@ -18,6 +18,7 @@ const authConfig: AuthConfig = {
 	session: {
 		strategy: 'jwt',
 	},
+	basePath: '/auth',
 	debug: true,
 	callbacks: {
 		async session({ session, token }) {
