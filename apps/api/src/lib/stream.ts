@@ -24,7 +24,7 @@ export const getEmitter = (id: string) => {
 	sessions.set(id, session);
 
 	emitter.addEventListener('token', (e: any) => {
-		console.log('getEmitter token', JSON.stringify(e.detail));
+		// console.log('getEmitter token', JSON.stringify(e.detail));
 		const { token, idx } = e.detail;
 		if (token) session.tokens.push({ token, idx });
 	});
@@ -87,7 +87,7 @@ export const streamSession = (id: string, from: number) => {
 
 			// live follow
 			const h = (e: any) => {
-				console.log('live follow token', JSON.stringify(e.detail));
+				// console.log('live follow token', JSON.stringify(e.detail));
 				const { token, idx } = e.detail;
 				if (token && idx >= from) {
 					ctrl.enqueue(frameEncode(token, idx));

@@ -7,7 +7,7 @@ import { env } from '../../env';
 import { db } from '../../service/db';
 
 const nameAgent = new ChatOpenAI({
-	model: 'google/gemma-3-4b-it:free',
+	model: 'openai/gpt-4.1-nano',
 	temperature: 0.2,
 	openAIApiKey: env.OPENROUTER_API_KEY!,
 	configuration: {
