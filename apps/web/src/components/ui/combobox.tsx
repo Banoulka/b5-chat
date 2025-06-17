@@ -54,7 +54,7 @@ export function Combobox<T extends ComboboxOption>({
 					<ChevronDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 				</Button>
 			</PopoverTrigger>
-			<PopoverContent className="w-fit max-w-[70vw] p-0" side="top" align="start">
+			<PopoverContent className="w-fit max-w-[60vw] p-0" side="top" align="start">
 				<Command>
 					<CommandInput placeholder={searchPlaceholder} />
 					<CommandList>
@@ -65,14 +65,16 @@ export function Combobox<T extends ComboboxOption>({
 									key={option.value}
 									value={option.value}
 									onSelect={(selectedValue) => {
-										const newValue = selectedValue === currentValue ? '' : selectedValue;
-										handleValueChange(newValue);
+										handleValueChange(selectedValue);
 										setOpen(false);
 									}}
+									className={cn({
+										'bg-muted': currentValue === option.value,
+									})}
 								>
 									<CheckIcon
 										className={cn(
-											'mr-2 h-4 w-4',
+											'h-4 w-4',
 											currentValue === option.value ? 'opacity-100' : 'opacity-0',
 										)}
 									/>

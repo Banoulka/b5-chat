@@ -1,5 +1,6 @@
 import type { API_ThreadMessagesResponse } from '@b5-chat/common';
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
+import { FileIcon } from 'lucide-react';
 import { useMemo } from 'react';
 
 import { getMessageOpts } from '@/hooks/queries';
@@ -11,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { api } from '../auth/AuthContext';
 import MarkdownDisplay from '../MarkdownDisplay';
 import { Skeleton } from '../ui/skeleton';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 
 type Props = {
 	bottomRefHeight: number;
@@ -90,7 +92,7 @@ const MessageList = ({ bottomRefHeight, threadId, stream, ref }: Props) => {
 };
 
 const MessageDisplay = ({ message }: { message: MessageData }) => {
-	const attachments = (message as any).attachments as { key: string; name: string; url?: string }[] | undefined;
+	const attachments = useMemo(() => (message.type === 'local' ? [] : message.attachments), [message]);
 
 	return (
 		<div
@@ -99,25 +101,38 @@ const MessageDisplay = ({ message }: { message: MessageData }) => {
 		>
 			<div
 				className={cn(
-					'rounded-2xl p-2',
+					'rounded-2xl px-4 py-2',
 					message.type === 'user'
 						? 'bg-secondary w-fit max-w-[70%] dark:text-blue-50'
 						: 'w-full bg-transparent dark:text-green-50',
 				)}
 			>
 				{message.type === 'agent' ? <MarkdownDisplay markdown={message.content} /> : <p>{message.content}</p>}
-				{attachments &&
-					attachments.map((file) => {
-						const isImage = file.url?.match(/\.(jpeg|jpg|png|gif|webp|svg)$/i);
-						return isImage && file.url ? (
-							<img
-								key={file.key}
-								src={file.url}
-								alt={file.name}
-								className="mt-2 max-w-xs rounded object-cover shadow"
-							/>
-						) : null;
+				<div className="flex flex-row gap-4">
+					{attachments.map((file) => {
+						const isImage = file.name?.match(/\.(jpeg|jpg|png|gif|webp|svg)$/i);
+						return (
+							<Tooltip key={file.key}>
+								<TooltipTrigger>
+									{isImage ? (
+										<img
+											src={file.url}
+											alt={file.name}
+											className="mt-2 max-h-[10em] max-w-[10em] rounded object-cover shadow"
+										/>
+									) : (
+										<div className="mt-2 max-h-[10em] max-w-[10em] rounded object-cover p-4 shadow">
+											<FileIcon size={48} />
+										</div>
+									)}
+								</TooltipTrigger>
+								<TooltipContent>
+									<p>{file.name}</p>
+								</TooltipContent>
+							</Tooltip>
+						);
 					})}
+				</div>
 			</div>
 		</div>
 	);

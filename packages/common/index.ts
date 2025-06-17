@@ -52,6 +52,7 @@ export type Modality = 'text' | 'image' | 'file';
 
 export interface ModelCard {
 	id: string;
+	description: string;
 	canonical_slug: string;
 	name: string;
 	context_length: number;
@@ -67,5 +68,10 @@ export type API_ModelCatalogueResponse = {
 	models: ModelCard[];
 	defaultModel: string;
 };
+
+export const eventTypes = {
+	on_chat_model_stream: 'on_chat_model_stream',
+	done: 'done',
+} as const;
 
 export const END_OF_TEXT_TOKEN = '<|endoftext|>';
