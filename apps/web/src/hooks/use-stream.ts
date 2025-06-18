@@ -57,6 +57,8 @@ export const useStream = ({ url, id, onComplete, onStream }: UseStreamOptions) =
 		await fetch(`${env.VITE_API_URL}${url}`, {
 			method: 'DELETE',
 		});
+
+		localStorage.removeItem(key); // remove the key from local storage since we dont want to pick it back up
 	};
 
 	const start = () => {

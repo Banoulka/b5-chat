@@ -38,3 +38,4 @@
 
 - Flashing when resizing text input area (probs due to resize ref thing. need to find fix for this, maybe floating fixed input bar at bottom plus bottom padding on message list instead?)
 - Flashing when stream text turns into tanstack text probs can be fixed by streaming directly into query cache?
+- Canceling a stream mid work doesnt work and the old data is still persisted for some reason

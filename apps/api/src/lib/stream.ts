@@ -40,7 +40,11 @@ export const getEmitter = (id: string) => {
 
 export const setEmitterCancelEvent = (id: string, cancel: () => void) => {
 	const session = sessions.get(id);
-	if (session) session.cancel = cancel;
+	if (session)
+		session.cancel = () => {
+			cancel();
+			sessions.delete(id);
+		};
 };
 
 export const getStreamSessionContent = (id: string) => {

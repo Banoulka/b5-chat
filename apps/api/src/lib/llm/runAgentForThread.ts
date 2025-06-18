@@ -27,14 +27,26 @@ export const runAgentForThread = async ({ model, threadId, userId, reasoning }: 
 	const streamId = `thread-${threadId}`;
 	const emitter = getEmitter(streamId);
 	console.log(`[agent]: got emitter for thread: ${threadId}`);
+	const abortController = new AbortController();
 
 	// Set up the done handler to save the message
 	const onDone = async () => {
 		console.log(`[agent]: streaming finished for thread: ${threadId}`);
 
+		console.debug('abortController.signal.aborted', abortController.signal.aborted);
+
+		if (abortController.signal.aborted) {
+			console.log(`[agent]: stream aborted for thread: ${threadId}`);
+			emitter.removeEventListener('done', onDone);
+			deleteStreamSession(streamId);
+			return;
+		}
+
 		const content = getStreamSessionContent(streamId);
 		if (!content) {
 			console.error(`[agent]: no content found for session: ${streamId}`);
+			emitter.removeEventListener('done', onDone);
+			deleteStreamSession(streamId);
 			return;
 		}
 
@@ -47,7 +59,6 @@ export const runAgentForThread = async ({ model, threadId, userId, reasoning }: 
 			model: model,
 		});
 
-		console.log(`[agent]: removing done listener for thread: ${threadId}`);
 		emitter.removeEventListener('done', onDone);
 		console.log(`[agent]: deleting stream session for thread: ${threadId}`);
 		deleteStreamSession(streamId);
@@ -58,10 +69,13 @@ export const runAgentForThread = async ({ model, threadId, userId, reasoning }: 
 	const streamResponse = async () => {
 		try {
 			console.log(`[agent]: starting stream for thread: ${threadId}`);
-			const stream = await agent.stream(conversation);
+			const stream = await agent.stream(conversation, { signal: abortController.signal });
 
 			console.log(`[agent]: set emitter cancel event for thread: ${threadId}`);
-			setEmitterCancelEvent(streamId, () => stream.cancel());
+			setEmitterCancelEvent(streamId, () => {
+				console.log(`[agent]: aborting stream for thread: ${threadId}`);
+				abortController.abort();
+			});
 
 			let tokenIndex = 0;
 
