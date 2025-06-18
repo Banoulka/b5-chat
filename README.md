@@ -16,6 +16,7 @@
 - [ ] Chat branching (alternative conversation paths plus ui)
 - [ ] Chat sharing (share chat with link + anonymous)
 - [ ] Web search (plus model guard)
+- [ ] Reasoning / Web search streaming (thinking phase)
 - [ ] BYOK (bring your own key)
 - [ ] ~~Mobile app~~
 
@@ -35,6 +36,5 @@
 
 ### Known Bugs
 
-- [x] Model select drop down not following system theme
-- [ ] Flashing when resizing text input area (probs due to resize ref thing. need to find fix for this, maybe floating fixed input bar at bottom plus bottom padding on message list instead?) 
-- [ ] API strange auth errors on hot reload restart 
+- Flashing when resizing text input area (probs due to resize ref thing. need to find fix for this, maybe floating fixed input bar at bottom plus bottom padding on message list instead?)
+- Flashing when stream text turns into tanstack text probs can be fixed by streaming directly into query cache?

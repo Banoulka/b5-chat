@@ -94,7 +94,10 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 			</div>
 			<Sidebar>
 				<SidebarHeader>
-					<h1 className="m-1 w-full text-center text-lg font-light">b5.chat</h1>
+					<h1 className="m-1 w-full text-center text-lg font-light">
+						b5.chat
+						<span className="text-muted-foreground ml-1 text-xs">(not t3 chat)</span>
+					</h1>
 				</SidebarHeader>
 
 				<SidebarContent>
