@@ -168,3 +168,18 @@
 		--sidebar-ring: oklch(0.439 0 0);
 	}
 }
+
+.jitter-bg {
+	background-color: var(--secondary) !important;
+  
+	background-image: linear-gradient(
+	  145deg,
+	  var(--secondary) 0%,
+	  color-mix(in srgb, var(--secondary) 98%, white) 45%,
+	  color-mix(in srgb, var(--secondary) 98%, white) 55%,
+	  /* 55 % – 100 %: –6 % lightness (mix with black) */
+	  color-mix(in srgb, var(--secondary) 98%, black) 100%
+	) !important;
+  
+	/* background-blend-mode: overlay !important; */
+  }

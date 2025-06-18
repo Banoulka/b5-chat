@@ -77,7 +77,7 @@ const InputArea = ({ stream, inputKey, onSendNewMessage }: MessageInputProps) =>
 	};
 
 	return (
-		<div className="bg-secondary mx-auto mt-auto mb-2 flex w-[80%] flex-col rounded-2xl p-2">
+		<div className="jitter-bg mx-auto mt-auto mb-2 flex w-[80%] flex-col rounded-2xl p-2 shadow-lg">
 			<LocalFileDisplay />
 
 			<Textarea
