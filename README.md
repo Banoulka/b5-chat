@@ -2,16 +2,16 @@
 
 ## MVP
 
-- [ ] Chats and converations
-- [ ] Multiple models & providers to choose from
+- [x] Chats and converations
+- [x] Multiple models & providers to choose from
 - [x] Auth users
 - [ ] Easy to setup and try
 
 ## Bonus features
 
-- [ ] Attachment support (plus model guards)
+- [x] Attachment support (plus model guards)
 - [ ] Image-generation support (plus models)
-- [ ] Syntax code highlighting
+- [x] Syntax code highlighting
 - [x] Resumable streams (continue gen after page refresh)
 - [ ] Chat branching (alternative conversation paths plus ui)
 - [ ] Chat sharing (share chat with link + anonymous)

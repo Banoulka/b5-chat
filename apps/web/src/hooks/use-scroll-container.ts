@@ -6,6 +6,7 @@ export interface UseScrollContainerProps {
 	anchorBottomDeps?: unknown[];
 	onReachTop?: () => void;
 	onReachBottom?: () => void;
+	onScroll?: (top: number, height: number) => void;
 }
 
 export const useScrollContainer = ({
@@ -14,6 +15,7 @@ export const useScrollContainer = ({
 	anchorBottomDeps = [],
 	onReachTop,
 	onReachBottom,
+	onScroll,
 }: UseScrollContainerProps) => {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const isAtBottomRef = useRef(true);
@@ -51,6 +53,8 @@ export const useScrollContainer = ({
 
 			const nearBottom = scrollTop + threshold + target.clientHeight >= target.scrollHeight;
 			if (nearBottom) onReachBottom?.();
+
+			onScroll?.(scrollTop, target.scrollHeight);
 
 			// track bottom status
 			isAtBottomRef.current = nearBottom;

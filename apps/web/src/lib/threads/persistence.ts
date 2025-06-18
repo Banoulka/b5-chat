@@ -127,12 +127,12 @@ export const dbPersistence: ThreadPersistence = {
 	},
 
 	async createNewThread(): Promise<APIThread> {
-		const response = await api<{ thread: APIThread }>('/threads', {
+		const response = await api<APIThread>('/threads', {
 			body: JSON.stringify({}),
 			method: 'POST',
 		});
 
-		return response.thread;
+		return response;
 	},
 
 	getType: () => 'db',

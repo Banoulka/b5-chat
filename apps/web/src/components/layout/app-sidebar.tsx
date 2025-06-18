@@ -1,3 +1,4 @@
+import type { APIThread } from '@b5-chat/common';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -6,6 +7,7 @@ import {
 } from '@radix-ui/react-dropdown-menu';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from '@tanstack/react-router';
+import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 
 import {
@@ -24,10 +26,7 @@ import {
 import { usePersistence } from '@/hooks/use-persistence';
 
 import { useAuth } from '../auth/AuthContext';
-import { threads } from '../../../../api/src/db/schema';
-
-import dayjs from 'dayjs'
-import type { APIThread } from '@b5-chat/common';
+import { Button } from '../ui/button';
 
 export function AppSidebar({ children }: { children: React.ReactNode }) {
 	const params = useParams({ from: '/threads/$threadId', shouldThrow: false });
@@ -55,38 +54,38 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 		}
 	}, []);
 
-	const today = dayjs().startOf('day')
-	const yesterday = dayjs().subtract(1, 'day')
-	const sevenDaysAgo = dayjs().subtract(7, 'day')
-	const thirtyDaysAgo = dayjs().subtract(30, 'day')
+	const today = dayjs().startOf('day');
+	const yesterday = dayjs().subtract(1, 'day');
+	const sevenDaysAgo = dayjs().subtract(7, 'day');
+	const thirtyDaysAgo = dayjs().subtract(30, 'day');
 
 	const groupedThreads: Record<string, APIThread[]> = {
 		Today: [],
 		Yesterday: [],
-		"Last 7 days": [],
-		"Last 30 days": [],
-		Older: []
+		// eslint-disable-next-line sort-keys-fix/sort-keys-fix
+		'Last 7 days': [],
+		// eslint-disable-next-line sort-keys-fix/sort-keys-fix
+		'Last 30 days': [],
+		Older: [],
 	};
 
-	if (threads?.data){
-
-		threads?.data.forEach((thread) =>{
+	if (threads?.data) {
+		threads?.data.forEach((thread) => {
 			const threadDate = dayjs(thread.updatedAt);
 
-			if (threadDate.isSame(today, 'day')){
+			if (threadDate.isSame(today, 'day')) {
 				groupedThreads.Today?.push(thread);
-			} else if (threadDate.isSame(yesterday, 'day')){
-				groupedThreads.Yesterday?.push(thread)
-			} else if (threadDate.isAfter(sevenDaysAgo) && (threadDate.isBefore(yesterday))){	
-				groupedThreads['Last 7 days']?.push(thread)
-			} else if (threadDate.isAfter(thirtyDaysAgo) && (threadDate.isBefore(sevenDaysAgo))){
+			} else if (threadDate.isSame(yesterday, 'day')) {
+				groupedThreads.Yesterday?.push(thread);
+			} else if (threadDate.isAfter(sevenDaysAgo) && threadDate.isBefore(yesterday)) {
+				groupedThreads['Last 7 days']?.push(thread);
+			} else if (threadDate.isAfter(thirtyDaysAgo) && threadDate.isBefore(sevenDaysAgo)) {
 				groupedThreads['Last 30 days']?.push(thread);
-			} else{
+			} else {
 				groupedThreads.Older?.push(thread);
 			}
-		})
+		});
 	}
-	
 
 	return (
 		<SidebarProvider defaultOpen={defaultOpen} defaultWidth={defaultWidth}>
@@ -100,39 +99,42 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
 				<SidebarContent>
 					<SidebarGroup>
-						<Link to="/">New Chat</Link>
+						<Link to="/" className="bg-primary text-primary-foreground block w-full rounded p-2 text-sm">
+							New Chat
+						</Link>
 					</SidebarGroup>
 					<SidebarGroup>
 						<SidebarGroupContent>
-				
-						{threads?.data &&
-						Object.entries(groupedThreads).map(([label, items]) => {
-							if (items.length === 0) return null;
+							{threads?.data &&
+								Object.entries(groupedThreads).map(([label, items]) => {
+									if (items.length === 0) return null;
 
-							return (
-								<div key={label}>
-								<SidebarGroupLabel>{label}</SidebarGroupLabel>
-								{items
-									.sort((a, b) => dayjs(b.updatedAt).unix() - dayjs(a.updatedAt).unix())
-									.map((thread) => (
-									<Link
-										key={thread.id}
-										to={`/threads/${thread.id}`}
-										className={`my-2 block w-full text-sm ${
-										params?.threadId === thread.id ? 'font-bold text-primary' : ''
-										}`}
-									>
-										{thread.name}
-									</Link>
-									))}
-								</div>
-							);
-							})}
-
+									return (
+										<div key={label}>
+											<SidebarGroupLabel className="text-muted-foreground text-xs">
+												{label}
+											</SidebarGroupLabel>
+											{items
+												.sort((a, b) => dayjs(b.updatedAt).unix() - dayjs(a.updatedAt).unix())
+												.map((thread) => (
+													<Link
+														key={thread.id}
+														to="/threads/$threadId"
+														params={{ threadId: thread.id }}
+														className={`my-0.5 block w-full rounded p-2 text-sm ${
+															params?.threadId === thread.id
+																? 'bg-accent text-accent-foreground'
+																: ''
+														}`}
+													>
+														{thread.name}
+													</Link>
+												))}
+										</div>
+									);
+								})}
 						</SidebarGroupContent>
-						</SidebarGroup>
-
-
+					</SidebarGroup>
 				</SidebarContent>
 
 				<SidebarFooter>
@@ -153,7 +155,12 @@ const AuthButton = () => {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<SidebarMenuButton>{isSignedIn ? session.user.name : 'Account'}</SidebarMenuButton>
+				<SidebarMenuButton asChild>
+					<Button>
+						<img src={session?.user.image ?? ''} alt="User Avatar" className="h-4 w-4 rounded-full" />
+						{session?.user.name}
+					</Button>
+				</SidebarMenuButton>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent>
 				<DropdownMenuItem>

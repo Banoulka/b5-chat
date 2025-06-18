@@ -64,6 +64,23 @@ export const attachments = pgTable(
 	}),
 );
 
+export const threadShareLinks = pgTable(
+	'threadShareLink',
+	{
+		id: uuid('id')
+			.primaryKey()
+			.default(sql`gen_random_uuid()`),
+		threadId: uuid('threadId')
+			.notNull()
+			.references(() => threads.id, { onDelete: 'cascade' }),
+		url: text('url').notNull(),
+		createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
+	},
+	(table) => ({
+		threadIdIdx: index('threadShareLinks_thread_id_idx').on(table.threadId),
+	}),
+);
+
 export const attachmentRelations = relations(attachments, ({ one }) => ({
 	message: one(messages, {
 		fields: [attachments.messageId],
@@ -73,6 +90,14 @@ export const attachmentRelations = relations(attachments, ({ one }) => ({
 
 export const threadsRelations = relations(threads, ({ many }) => ({
 	messages: many(messages),
+	shareLinks: many(threadShareLinks),
+}));
+
+export const threadShareLinksRelations = relations(threadShareLinks, ({ one }) => ({
+	thread: one(threads, {
+		fields: [threadShareLinks.threadId],
+		references: [threads.id],
+	}),
 }));
 
 export const messagesRelations = relations(messages, ({ one, many }) => ({

@@ -1,7 +1,7 @@
 import type { API_ThreadMessagesResponse } from '@b5-chat/common';
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
-import { Currency, FileIcon } from 'lucide-react';
-import { useEffect, useMemo, useState} from 'react';
+import { ArrowDownIcon, FileIcon, LucideTextCursor } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { getMessageOpts } from '@/hooks/queries';
 import { useScrollContainer } from '@/hooks/use-scroll-container';
@@ -11,9 +11,9 @@ import { cn } from '@/lib/utils';
 
 import { api } from '../auth/AuthContext';
 import MarkdownDisplay from '../MarkdownDisplay';
+import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
-import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
 
 type Props = {
 	bottomRefHeight: number;
@@ -45,6 +45,8 @@ const MessageList = ({ bottomRefHeight, threadId, stream, ref }: Props) => {
 			...getMessageOpts(threadId),
 		});
 
+	const [showScrollButton, setShowScrollButton] = useState(false);
+
 	const { containerRef: scrollRef, isAtTopRef } = useScrollContainer({
 		anchorBottomDeps: [bottomRefHeight],
 		isLoading,
@@ -52,6 +54,10 @@ const MessageList = ({ bottomRefHeight, threadId, stream, ref }: Props) => {
 			if (hasNextPage && !isFetchingNextPage) {
 				fetchNextPage();
 			}
+		},
+		onScroll: (top, height) => {
+			// if we are about a quarter of the way up the page, show the scroll to bottom button
+			setShowScrollButton(height > 3000 && top < height * 0.75);
 		},
 		threshold: SCROLL_THRESHOLD,
 	});
@@ -63,17 +69,15 @@ const MessageList = ({ bottomRefHeight, threadId, stream, ref }: Props) => {
 
 	const mergedRefs = useMemo(() => mergeRefs([scrollRef, ref]), [scrollRef, ref]);
 
-	const shouldShowSkeleton = !isLoading && isFetching && isAtTopRef.current;
-
-	const [showScrollButton, setShowScrollButton] = useState(false);
+	const shouldShowSkeleton = !isLoading && isFetching && isAtTopRef.current && (data?.pages.length ?? 0) > 1;
 
 	const scrollToBottom = () => {
 		const current = scrollRef.current;
 
 		if (current) {
-			current.scrollTo({ top: current.scrollHeight, behavior: 'smooth'})
+			current.scrollTo({ behavior: 'smooth', top: current.scrollHeight });
 		}
-	}
+	};
 
 	return (
 		<div
@@ -93,20 +97,56 @@ const MessageList = ({ bottomRefHeight, threadId, stream, ref }: Props) => {
 			))}
 			{/* TODO: Move to query cache */}
 			{stream.isStreaming && (
-				<div className="m-2 mx-auto flex w-[70%] flex-col items-end">
-					<p className={cn('w-full rounded bg-green-200 p-2 dark:bg-green-700')}>
-						<MarkdownDisplay markdown={stream.tokens} />
-					</p>
-				</div>
+				<>
+					{stream.tokens.length === 0 && (
+						<div className="relative m-2 mx-auto flex w-[70%] flex-row items-center">
+							<LucideTextCursor className="h-4 w-4" />
+							<AnimatedDots />
+						</div>
+					)}
+
+					<div className="m-2 mx-auto flex w-[70%] flex-col items-end">
+						<p className={cn('w-full rounded p-2')}>
+							<MarkdownDisplay markdown={stream.tokens} />
+						</p>
+					</div>
+				</>
 			)}
 
-			{showScrollButton && (
-				<button
-					onClick={scrollToBottom}
-				>Scroll to Bottom</button>
-			)}
+			<Button
+				className={cn(
+					'pointer-events-none fixed right-26 bottom-38 opacity-0 transition-opacity duration-300',
+					{
+						'pointer-events-auto opacity-100': showScrollButton,
+					},
+				)}
+				onClick={scrollToBottom}
+				variant="outline"
+			>
+				Scroll to Bottom
+				<ArrowDownIcon className="ml-2 h-4 w-4" />
+			</Button>
 		</div>
 	);
+};
+
+const AnimatedDots = () => {
+	const [dots, setDots] = useState('.');
+
+	useEffect(() => {
+		const interval = setInterval(() => {
+			setDots((prev) => {
+				if (prev === ' ') return '.';
+				if (prev === '.') return '..';
+				if (prev === '..') return '...';
+				return ' ';
+			});
+		}, 500);
+
+		return () => clearInterval(interval);
+	}, []);
+
+	return <span className="absolute -top-0.5 left-4 animate-pulse">{dots}</span>;
 };
 
 const MessageDisplay = ({ message }: { message: MessageData }) => {
