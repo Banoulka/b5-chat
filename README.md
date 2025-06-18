@@ -5,7 +5,8 @@
 - [x] Chats and converations
 - [x] Multiple models & providers to choose from
 - [x] Auth users
-- [ ] Easy to setup and try
+- [x] Easy to setup and try
+- [x] Local chat + sync to server
 
 ## Bonus features
 

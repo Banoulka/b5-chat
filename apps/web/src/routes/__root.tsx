@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from '@/components/auth/AuthContext';
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { AppSidebarInset } from '@/components/layout/app-sidebar-inset';
 import { LoadingSpinner } from '@/components/ui/spinner';
+import { SyncStatus } from '@/components/ui/sync-status';
 import { env } from '@/env';
 
 const queryClient = new QueryClient();
@@ -16,19 +17,20 @@ console.log('env url', env.VITE_API_URL);
 export const Route = createRootRoute({
 	component: () => (
 		<>
-			<AuthProvider>
-				<QueryClientProvider client={queryClient}>
+			<QueryClientProvider client={queryClient}>
+				<AuthProvider>
 					<AuthLoader>
 						<AppSidebar>
 							<AppSidebarInset>
+								<SyncStatus />
 								<Outlet />
 							</AppSidebarInset>
 						</AppSidebar>
 					</AuthLoader>
 					<ReactQueryDevtools buttonPosition="top-right" />
-				</QueryClientProvider>
-				<TanStackRouterDevtools position="top-right" />
-			</AuthProvider>
+					<TanStackRouterDevtools position="top-right" />
+				</AuthProvider>
+			</QueryClientProvider>
 		</>
 	),
 });

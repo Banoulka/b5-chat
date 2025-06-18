@@ -1,15 +1,15 @@
-import type { API_ThreadMessagesResponse } from '@b5-chat/common';
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 import { ArrowDownIcon, FileIcon, LucideTextCursor } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { getMessageOpts } from '@/hooks/queries';
+import { usePersistence } from '@/hooks/use-persistence';
 import { useScrollContainer } from '@/hooks/use-scroll-container';
 import { useStream } from '@/hooks/use-stream';
 import { mergeRefs } from '@/lib/merge-refs';
+import type { ThreadMessagesResponse } from '@/lib/threads/persistence';
 import { cn } from '@/lib/utils';
 
-import { api } from '../auth/AuthContext';
 import MarkdownDisplay from '../MarkdownDisplay';
 import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
@@ -28,20 +28,24 @@ export type LocalMessage = {
 	content: string;
 };
 
-export type QueryTypeMessageData = Omit<API_ThreadMessagesResponse, 'data'> & { data: MessageData[] };
+export type QueryTypeMessageData = Omit<ThreadMessagesResponse, 'data'> & { data: MessageData[] };
 
-type MessageData = API_ThreadMessagesResponse['data'][number] | LocalMessage;
+type MessageData = ThreadMessagesResponse['data'][number] | LocalMessage;
 
 const SCROLL_THRESHOLD = 70;
 
 const MessageList = ({ bottomRefHeight, threadId, stream, ref }: Props) => {
+	const persistence = usePersistence();
+
 	const { data, isFetching, isFetchPreviousPageError, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
 		useInfiniteQuery<QueryTypeMessageData>({
 			getNextPageParam: (lastPage) => lastPage?.meta?.nextCursor,
 			initialPageParam: undefined,
 			placeholderData: keepPreviousData,
-			queryFn: ({ pageParam }) =>
-				api(pageParam ? `/threads/${threadId}/messages?from=${pageParam}` : `/threads/${threadId}/messages`),
+			queryFn: async ({ pageParam }) => {
+				const response = await persistence.listMessagesForThread(threadId, pageParam as number | null);
+				return response as QueryTypeMessageData;
+			},
 			...getMessageOpts(threadId),
 		});
 
@@ -64,7 +68,7 @@ const MessageList = ({ bottomRefHeight, threadId, stream, ref }: Props) => {
 
 	const flatPages = useMemo(() => {
 		if (!data) return [];
-		return [...data.pages].reverse().flatMap((page) => [...page.data].reverse());
+		return data.pages.flatMap((page) => page.data);
 	}, [data]);
 
 	const mergedRefs = useMemo(() => mergeRefs([scrollRef, ref]), [scrollRef, ref]);

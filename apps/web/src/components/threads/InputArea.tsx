@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useMemo } from 'react';
 
+import { useAuth } from '@/components/auth/AuthContext';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { getModelCatalogueOpts } from '@/hooks/queries';
 import type { useStream } from '@/hooks/use-stream';
@@ -40,6 +41,7 @@ type MessageInputProps = {
 
 const InputArea = ({ stream, inputKey, onSendNewMessage }: MessageInputProps) => {
 	const { data: modelCatalogue } = useQuery(getModelCatalogueOpts);
+	const { isSignedIn } = useAuth();
 	const { readyFiles, clearFiles } = useUploaderContext();
 	const [model, setModel] = useLocalStorage(
 		`last-model-${inputKey}`,
@@ -53,12 +55,12 @@ const InputArea = ({ stream, inputKey, onSendNewMessage }: MessageInputProps) =>
 
 	const supportedCapabilities = useMemo(
 		() => ({
-			file: selectedModel?.architecture.input_modalities.includes('file') ?? false,
-			image: selectedModel?.architecture.input_modalities.includes('image') ?? false,
+			file: isSignedIn && (selectedModel?.architecture.input_modalities.includes('file') ?? false),
+			image: isSignedIn && (selectedModel?.architecture.input_modalities.includes('image') ?? false),
 			reasoning: selectedModel?.supported_parameters.includes('reasoning') ?? false,
-			webSearch: selectedModel?.supported_parameters.includes('web_search_options') ?? false,
+			webSearch: isSignedIn && (selectedModel?.supported_parameters.includes('web_search_options') ?? false),
 		}),
-		[selectedModel],
+		[selectedModel, isSignedIn],
 	);
 
 	const handleSend = () => {
@@ -66,19 +68,23 @@ const InputArea = ({ stream, inputKey, onSendNewMessage }: MessageInputProps) =>
 		if (content.trim() === '') return;
 
 		onSendNewMessage?.({
-			attachments: readyFiles.map((file) => ({ key: file.key, name: file.name, url: file.url })),
+			attachments: isSignedIn
+				? readyFiles.map((file) => ({ key: file.key, name: file.name, url: file.url }))
+				: [],
 			content,
 			modelId: model,
 			reasoning: supportedCapabilities.reasoning ? reasoning : undefined,
 			webSearch: supportedCapabilities.webSearch ? webSearch : undefined,
 		});
 		setContent('');
-		clearFiles();
+		if (isSignedIn) {
+			clearFiles();
+		}
 	};
 
 	return (
 		<div className="jitter-bg mx-auto mt-auto mb-2 flex w-[80%] flex-col rounded-2xl p-2 shadow-lg">
-			<LocalFileDisplay />
+			{isSignedIn && <LocalFileDisplay />}
 
 			<Textarea
 				className="max-h-90 resize-none overflow-y-auto border-none bg-transparent shadow-none focus-visible:border-none focus-visible:ring-0 dark:bg-transparent dark:text-white"

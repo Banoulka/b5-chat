@@ -2,7 +2,7 @@ import type { APIThreadMessage } from '@b5-chat/common';
 import type { CreateMessageSchema } from '@b5-chat/common/schemas';
 import { type InfiniteData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { api } from '@/components/auth/AuthContext';
@@ -14,6 +14,7 @@ import { useStream } from './use-stream';
 
 export const useThreadMessaging = (initialThreadId?: string) => {
 	const [threadId, setThreadId] = useState<string | undefined>(initialThreadId);
+	const latestTokensRef = useRef<string>('');
 
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
@@ -125,6 +126,37 @@ export const useThreadMessaging = (initialThreadId?: string) => {
 
 	const handleSendMessage = useCallback(
 		async (data: CreateMessageSchema) => {
+			// For local/guest mode, use sendMessageWithHistory if available
+			if (persistence.sendMessageWithHistory && (!threadId || threadId.startsWith('local-'))) {
+				// Get conversation history from current thread messages
+				const history: Array<{ role: 'user' | 'assistant'; content: string }> = [];
+
+				if (threadId) {
+					const response = await persistence.listMessagesForThread(threadId, null);
+					for (const msg of response.data) {
+						history.push({
+							content: msg.content,
+							role: msg.type === 'user' ? 'user' : 'assistant',
+						});
+					}
+				}
+
+				const response = await persistence.sendMessageWithHistory(data, history, threadId);
+				setThreadId(response.threadId);
+
+				// Invalidate queries to refresh the UI
+				queryClient.invalidateQueries({ queryKey: ['threads'] });
+				if (response.threadId) {
+					queryClient.invalidateQueries(getMessageOpts(response.threadId));
+				}
+
+				if (!threadId) {
+					navigate({ replace: true, to: `/threads/${response.threadId}` });
+				}
+				return;
+			}
+
+			// Original authenticated flow
 			let id = threadId;
 
 			if (!id) {
@@ -141,14 +173,48 @@ export const useThreadMessaging = (initialThreadId?: string) => {
 				navigate({ replace: true, to: `/threads/${id}` });
 			}
 		},
-		[threadId, createThread, navigate, queryClient],
+		[threadId, createThread, navigate, queryClient, persistence, sendMessage],
 	);
 
 	const streamUrl = useMemo(() => (threadId ? `/threads/${threadId}/stream` : ''), [threadId]);
 
+	const saveStreamedResponseToLocal = useCallback(async (threadId: string, content: string) => {
+		const messagesKey = `lbd:thread_messages_${threadId}`;
+		const existingMessages = JSON.parse(localStorage.getItem(messagesKey) || '[]');
+
+		const hasExistingResponse = existingMessages.some(
+			(msg: APIThreadMessage) => msg.type === 'agent' && msg.content === content,
+		);
+
+		if (hasExistingResponse) {
+			console.log('Agent response already saved, skipping duplicate');
+			return;
+		}
+
+		const assistantMessage = {
+			attachments: [],
+			content,
+			createdAt: new Date().toISOString(),
+			id: crypto.randomUUID(),
+			model: 'assistant',
+			type: 'agent',
+			updatedAt: new Date().toISOString(),
+		};
+
+		existingMessages.push(assistantMessage);
+		localStorage.setItem(messagesKey, JSON.stringify(existingMessages));
+	}, []);
+
 	const stream = useStream({
 		id: threadId,
-		onComplete: () => threadId && queryClient.invalidateQueries(getMessageOpts(threadId)),
+		onComplete: (tokens) => {
+			// for local threads, save the final response when streaming completes
+			if (threadId?.startsWith('local-') && persistence.getType() === 'localStorage') {
+				saveStreamedResponseToLocal(threadId, tokens);
+			}
+
+			if (threadId) queryClient.invalidateQueries(getMessageOpts(threadId));
+		},
 		url: streamUrl,
 	});
 

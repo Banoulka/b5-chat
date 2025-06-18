@@ -1,4 +1,5 @@
 import type { Session } from '@b5-chat/common';
+import { useQueryClient } from '@tanstack/react-query';
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { env } from '@/env';
@@ -18,6 +19,7 @@ interface BaseContext {
 	signIn: () => Promise<void>;
 	signOut: () => Promise<void>;
 	isLoading: boolean;
+	isSyncing: boolean;
 }
 
 interface AuthenticatedContext extends BaseContext {
@@ -33,19 +35,40 @@ interface UnauthenticatedContext extends BaseContext {
 const AuthCtx = createContext<AuthenticatedContext | UnauthenticatedContext | null>(null);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+	const queryClient = useQueryClient();
 	const [session, setSession] = useState<Session | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
+	const [isSyncing, setIsSyncing] = useState(false);
 
 	const isSignedIn = useMemo(() => !!session, [session]);
 
 	const lastSignedInRef = useRef<boolean>(isSignedIn);
 
 	useEffect(() => {
-		if (isSignedIn !== lastSignedInRef.current) {
-			lastSignedInRef.current = isSignedIn;
-			console.log('unauthenticated to authenticated, we should try and sync to the server');
-			syncToServer();
-		}
+		const handleSync = async () => {
+			const wasSignedIn = lastSignedInRef.current;
+			const isNowSignedIn = isSignedIn;
+
+			if (!wasSignedIn && isNowSignedIn) {
+				console.log('User signed in - syncing local data to server...');
+				setIsSyncing(true);
+
+				try {
+					await syncToServer();
+					console.log('Successfully synced local data to server');
+
+					queryClient.invalidateQueries({ queryKey: ['threads'] });
+				} catch (error) {
+					console.error('Failed to sync local data to server:', error);
+				} finally {
+					setIsSyncing(false);
+				}
+			}
+
+			lastSignedInRef.current = isNowSignedIn;
+		};
+
+		handleSync();
 	}, [isSignedIn]);
 
 	useEffect(() => {
@@ -67,7 +90,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 	return (
 		<AuthCtx.Provider
-			value={{ isLoading, isSignedIn, session, signIn, signOut } as AuthenticatedContext | UnauthenticatedContext}
+			value={
+				{ isLoading, isSignedIn, isSyncing, session, signIn, signOut } as
+					| AuthenticatedContext
+					| UnauthenticatedContext
+			}
 		>
 			{children}
 		</AuthCtx.Provider>

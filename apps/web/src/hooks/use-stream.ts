@@ -8,7 +8,7 @@ const useStreamVersion = 1;
 type UseStreamOptions = {
 	url: string;
 	id?: string;
-	onComplete?: () => void;
+	onComplete?: (tokens: string) => void;
 	onStream?: (tokens: string) => void;
 };
 
@@ -37,7 +37,7 @@ export const useStream = ({ url, id, onComplete, onStream }: UseStreamOptions) =
 			if (e.data === END_OF_TEXT_TOKEN || e.data.includes(END_OF_TEXT_TOKEN)) {
 				stop();
 				localStorage.removeItem(key); // we are done we no more need
-				onComplete?.();
+				onComplete?.(prev);
 				return prev;
 			}
 

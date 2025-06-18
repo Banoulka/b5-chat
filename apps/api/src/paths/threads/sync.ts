@@ -6,34 +6,35 @@ import { route } from '../../lib/router/route';
 import { getSession } from '../../service/auth';
 import { db } from '../../service/db';
 
+const messageSchema = z.object({
+	id: z.string(),
+	updatedAt: z.string(),
+	createdAt: z.string(),
+	content: z.string(),
+	model: z.string().nullable(),
+	type: z.enum(['user', 'agent']),
+	attachments: z
+		.array(
+			z.object({
+				id: z.string(),
+				name: z.string(),
+				url: z.string(),
+				key: z.string(),
+			}),
+		)
+		.optional(),
+});
+
+const threadSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	updatedAt: z.string(),
+	createdAt: z.string(),
+	messages: z.array(messageSchema),
+});
+
 const schema = z.object({
-	threads: z.array(
-		z.object({
-			id: z.string(),
-			name: z.string(),
-			updatedAt: z.string(),
-			createdAt: z.string(),
-		}),
-	),
-	messages: z.array(
-		z.object({
-			id: z.string(),
-			updatedAt: z.string(),
-			createdAt: z.string(),
-			content: z.string(),
-			threadId: z.string(),
-			model: z.string(),
-			type: z.enum(['user', 'agent']),
-			attachments: z.array(
-				z.object({
-					id: z.string(),
-					name: z.string(),
-					url: z.string(),
-					key: z.string(),
-				}),
-			),
-		}),
-	),
+	threads: z.array(threadSchema),
 });
 
 export const POST = route(
@@ -64,23 +65,22 @@ export const POST = route(
 				)
 				.onConflictDoNothing();
 
-			const localMessages = parsed.data.messages;
+			const allMessages = localThreads.flatMap((thread) =>
+				thread.messages.map((message) => ({
+					id: message.id,
+					content: message.content,
+					type: message.type,
+					threadId: thread.id,
+					userId: session!.user.id,
+					model: message.model,
+					updatedAt: new Date(message.updatedAt),
+					createdAt: new Date(message.createdAt),
+				})),
+			);
 
-			await tx
-				.insert(messages)
-				.values(
-					localMessages.map((m) => ({
-						id: m.id,
-						content: m.content,
-						type: m.type,
-						threadId: m.threadId,
-						userId: session!.user.id,
-						model: m.model,
-						updatedAt: new Date(m.updatedAt),
-						createdAt: new Date(m.createdAt),
-					})),
-				)
-				.onConflictDoNothing();
+			if (allMessages.length > 0) {
+				await tx.insert(messages).values(allMessages).onConflictDoNothing();
+			}
 		});
 
 		return ClientResponse.json({ status: 'success' });
