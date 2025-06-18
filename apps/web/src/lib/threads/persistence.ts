@@ -19,6 +19,7 @@ export interface ThreadPersistence {
 	createMessage(threadId: string, message: CreateMessageSchema): Promise<void>;
 	listMessagesForThread(threadId: string, from: number | null): Promise<ThreadMessagesResponse>;
 	createNewThread(): Promise<APIThread>;
+	updateThreadName?(threadId: string, name: string): Promise<void>;
 	sendMessageWithHistory?(
 		message: CreateMessageSchema,
 		history: Array<{ role: 'user' | 'assistant'; content: string }>,
@@ -143,7 +144,7 @@ export const localStoragePersistence: ThreadPersistence = {
 		const newThread: APIThread = {
 			createdAt: new Date().toISOString(),
 			id: crypto.randomUUID(),
-			name: 'New Thread',
+			name: '',
 			updatedAt: new Date().toISOString(),
 		};
 
@@ -226,7 +227,7 @@ export const localStoragePersistence: ThreadPersistence = {
 			const newThread: APIThread = {
 				createdAt: new Date().toISOString(),
 				id: response.threadId,
-				name: 'Local Chat',
+				name: '',
 				updatedAt: new Date().toISOString(),
 			};
 			threads.data.unshift(newThread);
@@ -245,6 +246,17 @@ export const localStoragePersistence: ThreadPersistence = {
 		localStorage.setItem(THREADS_KEY, JSON.stringify(threads));
 
 		return response;
+	},
+
+	async updateThreadName(threadId: string, name: string): Promise<void> {
+		const threads = await this.listThreads();
+		const threadIndex = threads.data.findIndex((t) => t.id === threadId);
+
+		if (threadIndex !== -1 && threads.data[threadIndex]) {
+			threads.data[threadIndex].name = name;
+			threads.data[threadIndex].updatedAt = new Date().toISOString();
+			localStorage.setItem(THREADS_KEY, JSON.stringify(threads));
+		}
 	},
 };
 
@@ -281,5 +293,12 @@ export const dbPersistence: ThreadPersistence = {
 
 	async listThreads(): Promise<API_ThreadsResponse> {
 		return await getThreadOpts.queryFn();
+	},
+
+	async updateThreadName(threadId: string, name: string): Promise<void> {
+		await api(`/threads/${threadId}`, {
+			body: JSON.stringify({ name }),
+			method: 'PATCH',
+		});
 	},
 };

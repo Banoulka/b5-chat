@@ -1,5 +1,11 @@
 # b5-chat created for the t3 [cloneathon](https://cloneathon.t3.chat) competition
 
+## Pre-reqs
+
+- Postgres database url
+- Github id/secret for authentication
+- Bun
+
 ## MVP
 
 - [x] Chats and converations

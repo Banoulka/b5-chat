@@ -3,7 +3,6 @@ import { createMessageSchema } from '@b5-chat/common/schemas';
 import { attachments, messages } from '../../../db/schema';
 import { BadRequestError } from '../../../lib/ClientError';
 import { ClientResponse } from '../../../lib/ClientResponse';
-import { generateThreadName } from '../../../lib/llm/generateThreadName';
 import { isSupportedModel } from '../../../lib/llm/models';
 import { runAgentForThread } from '../../../lib/llm/runAgentForThread';
 import { auth } from '../../../lib/middleware/auth';
@@ -142,14 +141,9 @@ export const POST = route(
 			userId: session.user.id,
 		});
 
-		// if the thread does not have a name, set another job to get it from the LLM
-		if (!thread.name || thread.name.trim() === '') {
-			generateThreadName(req.params.threadId, message.content);
-		}
-
 		return ClientResponse.json({
 			data: message,
-			changedThread: thread.name.trim() === '',
+			changedThread: false, // Title generation is now handled by frontend
 		});
 	},
 	[auth],

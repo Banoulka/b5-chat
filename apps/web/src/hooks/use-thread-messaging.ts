@@ -46,6 +46,22 @@ export const useThreadMessaging = (initialThreadId?: string) => {
 		},
 	});
 
+	const generateAndSetTitle = async (threadId: string, message: string) => {
+		try {
+			const response = await api<{ title: string }>('/generate-title', {
+				body: JSON.stringify({ message }),
+				method: 'POST',
+			});
+
+			if (response.title && persistence.updateThreadName) {
+				await persistence.updateThreadName(threadId, response.title);
+				queryClient.invalidateQueries({ queryKey: ['threads'] });
+			}
+		} catch (error) {
+			console.error('Failed to generate title:', error);
+		}
+	};
+
 	const { mutateAsync: sendMessage } = useMutation<
 		{ data: APIThreadMessage; changedThread: boolean },
 		unknown,
@@ -126,9 +142,7 @@ export const useThreadMessaging = (initialThreadId?: string) => {
 
 	const handleSendMessage = useCallback(
 		async (data: CreateMessageSchema) => {
-			// For local/guest mode, use sendMessageWithHistory if available
 			if (persistence.sendMessageWithHistory && (!threadId || threadId.startsWith('local-'))) {
-				// Get conversation history from current thread messages
 				const history: Array<{ role: 'user' | 'assistant'; content: string }> = [];
 
 				if (threadId) {
@@ -142,7 +156,13 @@ export const useThreadMessaging = (initialThreadId?: string) => {
 				}
 
 				const response = await persistence.sendMessageWithHistory(data, history, threadId);
+				const isNewLocalThread = !threadId;
 				setThreadId(response.threadId);
+
+				// Generate title for new local threads
+				if (isNewLocalThread) {
+					generateAndSetTitle(response.threadId, data.content);
+				}
 
 				// Invalidate queries to refresh the UI
 				queryClient.invalidateQueries({ queryKey: ['threads'] });
@@ -156,16 +176,21 @@ export const useThreadMessaging = (initialThreadId?: string) => {
 				return;
 			}
 
-			// Original authenticated flow
 			let id = threadId;
+			let isNewThread = false;
 
 			if (!id) {
 				const created = await createThread.mutateAsync();
 				id = created.id;
 				setThreadId(id);
+				isNewThread = true;
 			}
 
 			await sendMessage({ ...data, threadId: id });
+
+			if (isNewThread || thread?.name.trim() === '') {
+				generateAndSetTitle(id, data.content);
+			}
 
 			if (!threadId) {
 				console.log('had no thread id, navigate to new thread', id);
