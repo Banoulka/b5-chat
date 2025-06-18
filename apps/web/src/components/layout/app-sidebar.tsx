@@ -152,6 +152,8 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 const AuthButton = () => {
 	const { isSignedIn, session, signOut, signIn } = useAuth();
 
+	if (!isSignedIn) return <Button onClick={signIn}>Sign in</Button>;
+
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
@@ -166,11 +168,7 @@ const AuthButton = () => {
 				<DropdownMenuItem>
 					<Link to="/settings">Settings</Link>
 				</DropdownMenuItem>
-				{isSignedIn ? (
-					<DropdownMenuItem onClick={signOut}>Logout</DropdownMenuItem>
-				) : (
-					<DropdownMenuItem onClick={signIn}>Login</DropdownMenuItem>
-				)}
+				<DropdownMenuItem onClick={signOut}>Logout</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);
