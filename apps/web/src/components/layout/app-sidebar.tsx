@@ -59,10 +59,10 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 	const thirtyDaysAgo = dayjs().subtract(30, 'day')
 
 	const groupedThreads = {
-		today: [],
-		yesterday: [],
-		last30: [],
-		older: []
+		Today: [],
+		Yesterday: [],
+		"Last 30 days": [],
+		Older: []
 	};
 
 	if (threads?.data){
@@ -71,13 +71,13 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 			const threadDate = dayjs(thread.updatedAt);
 
 			if (threadDate.isSame(today, 'day')){
-				groupedThreads.today.push(thread);
+				groupedThreads.Today.push(thread);
 			} else if (threadDate.isSame(yesterday, 'day')){
-				groupedThreads.yesterday.push(thread)
+				groupedThreads.Yesterday.push(thread)
 			} else if (threadDate.isAfter(thirtyDaysAgo)){
-				groupedThreads.last30.push(thread);
+				groupedThreads['Last 30 days'].push(thread);
 			} else{
-				groupedThreads.older.push(thread);
+				groupedThreads.Older.push(thread);
 			}
 		})
 	}
