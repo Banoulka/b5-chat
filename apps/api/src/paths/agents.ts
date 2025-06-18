@@ -1,20 +1,17 @@
 import { ClientResponse } from '../lib/ClientResponse';
 import { fetchCatalogue } from '../lib/llm/catalogue';
-import { defaultModel } from '../lib/llm/models';
+import { defaultFreeModel, defaultModel } from '../lib/llm/models';
 import { route } from '../lib/router/route';
+import { getSession } from '../service/auth';
 
 // TODO: User preferences?
-export const GET = route('/agents', async () => {
+export const GET = route('/agents', async (req) => {
+	const session = await getSession(req);
 	const catalogue = await fetchCatalogue();
-
-	console.log(
-		'models',
-		catalogue.map((c) => c.name),
-	);
 
 	// TODO: Add user preferences?
 	return ClientResponse.json({
 		models: catalogue,
-		defaultModel: defaultModel,
+		defaultModel: session?.user ? defaultModel : defaultFreeModel,
 	});
 });

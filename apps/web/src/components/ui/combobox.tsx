@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 export interface ComboboxOption {
 	label: string;
 	value: string;
+	disabled?: boolean;
 }
 
 export interface ComboboxProps<T extends ComboboxOption> {
@@ -64,12 +65,15 @@ export function Combobox<T extends ComboboxOption>({
 								<CommandItem
 									key={option.value}
 									value={option.value}
+									disabled={option.disabled}
 									onSelect={(selectedValue) => {
+										if (option.disabled) return;
 										handleValueChange(selectedValue);
 										setOpen(false);
 									}}
 									className={cn({
 										'bg-muted': currentValue === option.value,
+										'cursor-not-allowed opacity-50': option.disabled,
 									})}
 								>
 									<CheckIcon

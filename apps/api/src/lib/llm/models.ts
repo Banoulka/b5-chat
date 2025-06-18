@@ -1,6 +1,7 @@
 import type { ModelCard } from '@b5-chat/common';
 
 export const defaultModel = 'openai/gpt-4.1';
+export const defaultFreeModel = 'google/gemma-3n-e4b-it:free';
 
 export const defaultModels = [
 	{
@@ -10,6 +11,7 @@ export const defaultModels = [
 		name: 'OpenAI: o3 Pro',
 		context_length: 200000,
 		supported_parameters: [],
+		free: false,
 		architecture: {
 			modality: 'text+image->text',
 			input_modalities: ['text', 'file', 'image'],
@@ -23,6 +25,7 @@ export const defaultModels = [
 		name: 'Google: Gemini 2.5 Pro Preview',
 		context_length: 1048576,
 		supported_parameters: ['reasoning', 'include_reasoning'],
+		free: false,
 		architecture: {
 			modality: 'text+image->text',
 			input_modalities: ['file', 'image', 'text'],
@@ -36,6 +39,7 @@ export const defaultModels = [
 		context_length: 200000,
 		description: "Anthropic's best coding model with sustained performance on complex tasks.",
 		supported_parameters: ['reasoning', 'include_reasoning'],
+		free: false,
 		architecture: {
 			modality: 'text+image->text',
 			input_modalities: ['image', 'text'],
@@ -49,6 +53,7 @@ export const defaultModels = [
 		name: 'Google: Gemma 3n 4B (free)',
 		context_length: 8192,
 		supported_parameters: [],
+		free: true,
 		architecture: {
 			modality: 'text->text',
 			input_modalities: ['text'],
@@ -62,6 +67,7 @@ export const defaultModels = [
 		description: "Meta's lightweight variant of Llama 3.3 optimized for quick responses.",
 		context_length: 128000,
 		supported_parameters: [],
+		free: true,
 		architecture: {
 			modality: 'text->text',
 			input_modalities: ['text'],
@@ -75,6 +81,7 @@ export const defaultModels = [
 		context_length: 1047576,
 		description: "OpenAI's flagship model for instruction following and software engineering.",
 		supported_parameters: ['web_search_options'],
+		free: false,
 		architecture: {
 			modality: 'text+image->text',
 			input_modalities: ['image', 'text', 'file'],
@@ -88,6 +95,7 @@ export const defaultModels = [
 		name: 'Meta: Llama 4 Maverick',
 		context_length: 1048576,
 		supported_parameters: [],
+		free: false,
 		architecture: {
 			modality: 'text+image->text',
 			input_modalities: ['text', 'image'],
@@ -101,6 +109,7 @@ export const defaultModels = [
 		name: 'DeepSeek: DeepSeek V3 Base (free)',
 		context_length: 163840,
 		supported_parameters: [],
+		free: true,
 		architecture: {
 			modality: 'text->text',
 			input_modalities: ['text'],
@@ -114,6 +123,7 @@ export const defaultModels = [
 		name: 'Anthropic: Claude 3.7 Sonnet',
 		context_length: 200000,
 		supported_parameters: ['reasoning', 'include_reasoning'],
+		free: false,
 		architecture: {
 			modality: 'text+image->text',
 			input_modalities: ['text', 'image'],
@@ -127,6 +137,7 @@ export const defaultModels = [
 		name: 'Google: Gemini 2.0 Flash',
 		context_length: 1048576,
 		supported_parameters: [],
+		free: false,
 		architecture: {
 			modality: 'text+image->text',
 			input_modalities: ['text', 'image', 'file'],
@@ -140,6 +151,7 @@ export const defaultModels = [
 		description: "OpenAI's latest model with text/image support, twice as fast as GPT-4 Turbo.",
 		context_length: 128000,
 		supported_parameters: ['web_search_options'],
+		free: false,
 		architecture: {
 			modality: 'text+image->text',
 			input_modalities: ['text', 'image', 'file'],
@@ -153,6 +165,7 @@ export const defaultModels = [
 		name: 'Google: Gemini 1.5 Pro',
 		context_length: 2000000,
 		supported_parameters: [],
+		free: false,
 		architecture: {
 			modality: 'text+image->text',
 			input_modalities: ['text', 'image'],
@@ -163,9 +176,12 @@ export const defaultModels = [
 
 export type ModelId = (typeof defaultModels)[number]['id'];
 
-const defaultModelIds = defaultModels.map((m) => m.id);
+export const freeModelIds = defaultModels.filter((m) => m.free).map((m) => m.id);
 
-export const isSupportedModel = (model: unknown): model is ModelId => defaultModelIds.includes(model as any);
+export const isSupportedModel = (model: unknown): model is ModelId =>
+	defaultModels.map((m) => m.id).includes(model as any);
+
+export const isSupportedFreeModel = (model: unknown): model is ModelId => freeModelIds.includes(model as any);
 
 export const isAttachmentSupported = (modelId: ModelId) => {
 	const model = defaultModels.find((m) => m.id === modelId);

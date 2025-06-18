@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { BadRequestError } from '../../lib/ClientError';
 import { ClientResponse } from '../../lib/ClientResponse';
-import { isSupportedModel } from '../../lib/llm/models';
+import { isSupportedFreeModel, isSupportedModel } from '../../lib/llm/models';
 import { runAgentForLocalChat } from '../../lib/llm/runAgentForLocalChat';
 import { route } from '../../lib/router/route';
 
@@ -28,6 +28,8 @@ export const POST = route('/chat/local', async (req) => {
 	const { modelId, content, history = [], threadId } = parsed.data;
 
 	if (!isSupportedModel(modelId)) throw new BadRequestError('Model not supported');
+
+	if (!isSupportedFreeModel(modelId)) throw new BadRequestError('Model not supported');
 
 	// use existing thread ID or generate a new one
 	const localThreadId = threadId || `local-${uuidv4()}`;

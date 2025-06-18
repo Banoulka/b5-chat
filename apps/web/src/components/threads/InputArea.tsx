@@ -43,10 +43,7 @@ const InputArea = ({ stream, inputKey, onSendNewMessage }: MessageInputProps) =>
 	const { data: modelCatalogue } = useQuery(getModelCatalogueOpts);
 	const { isSignedIn } = useAuth();
 	const { readyFiles, clearFiles } = useUploaderContext();
-	const [model, setModel] = useLocalStorage(
-		`last-model-${inputKey}`,
-		modelCatalogue?.defaultModel ?? 'openai/gpt-4.1',
-	);
+	const [model, setModel] = useLocalStorage(`last-model-${inputKey}`, modelCatalogue?.defaultModel);
 	const [content, setContent] = useLocalStorage(`last-input-${inputKey}`, '');
 	const [reasoning, setReasoning] = useLocalStorage(`last-reasoning-${inputKey}`, false);
 	const [webSearch, setWebSearch] = useLocalStorage(`last-web-search-${inputKey}`, false);
@@ -104,6 +101,7 @@ const InputArea = ({ stream, inputKey, onSendNewMessage }: MessageInputProps) =>
 						modelCatalogue?.models
 							.sort((a, b) => a.name.localeCompare(b.name))
 							.map((model) => ({
+								disabled: !isSignedIn && !model.free,
 								label: model.name,
 								value: model.id,
 								...model,
@@ -178,7 +176,7 @@ const InputArea = ({ stream, inputKey, onSendNewMessage }: MessageInputProps) =>
 	);
 };
 
-const ModelSelectItem = ({ model, isSelected }: { model: ModelCard; isSelected: boolean }) => {
+const ModelSelectItem = ({ model, isSelected }: { model: ModelCard & { disabled?: boolean }; isSelected: boolean }) => {
 	const logoDict = {
 		anthropic: ClaudeLogoSymbol,
 		deepseek: DeepSeekLogo,
@@ -235,10 +233,10 @@ const ModelSelectItem = ({ model, isSelected }: { model: ModelCard; isSelected: 
 	};
 
 	return (
-		<div key={model.id} className="flex w-full items-center gap-2 p-2">
+		<div key={model.id} className={`flex w-full items-center gap-2 p-2 ${model.disabled ? 'opacity-50' : ''}`}>
 			<img src={logoSvg} alt={model.name} className="mr-2 h-6 w-6" />
 
-			<p>{model.name}</p>
+			<p className={model.disabled ? 'text-muted-foreground' : ''}>{model.name}</p>
 
 			<Tooltip>
 				<TooltipTrigger asChild className="mr-6">

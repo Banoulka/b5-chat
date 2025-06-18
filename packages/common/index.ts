@@ -57,6 +57,7 @@ export interface ModelCard {
 	name: string;
 	context_length: number;
 	supported_parameters: Capability[];
+	free: boolean;
 	architecture: {
 		modality: string;
 		input_modalities: Modality[];
