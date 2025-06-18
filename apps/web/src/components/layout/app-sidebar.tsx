@@ -27,6 +27,7 @@ import { useAuth } from '../auth/AuthContext';
 import { threads } from '../../../../api/src/db/schema';
 
 import dayjs from 'dayjs'
+import type { APIThread } from '@b5-chat/common';
 
 export function AppSidebar({ children }: { children: React.ReactNode }) {
 	const params = useParams({ from: '/threads/$threadId', shouldThrow: false });
@@ -56,11 +57,13 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
 	const today = dayjs().startOf('day')
 	const yesterday = dayjs().subtract(1, 'day')
+	const sevenDaysAgo = dayjs().subtract(7, 'day')
 	const thirtyDaysAgo = dayjs().subtract(30, 'day')
 
-	const groupedThreads = {
+	const groupedThreads: Record<string, APIThread[]> = {
 		Today: [],
 		Yesterday: [],
+		"Last 7 days": [],
 		"Last 30 days": [],
 		Older: []
 	};
@@ -71,13 +74,15 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 			const threadDate = dayjs(thread.updatedAt);
 
 			if (threadDate.isSame(today, 'day')){
-				groupedThreads.Today.push(thread);
+				groupedThreads.Today?.push(thread);
 			} else if (threadDate.isSame(yesterday, 'day')){
-				groupedThreads.Yesterday.push(thread)
-			} else if (threadDate.isAfter(thirtyDaysAgo)){
-				groupedThreads['Last 30 days'].push(thread);
+				groupedThreads.Yesterday?.push(thread)
+			} else if (threadDate.isAfter(sevenDaysAgo) && (threadDate.isBefore(yesterday))){	
+				groupedThreads['Last 7 days']?.push(thread)
+			} else if (threadDate.isAfter(thirtyDaysAgo) && (threadDate.isBefore(sevenDaysAgo))){
+				groupedThreads['Last 30 days']?.push(thread);
 			} else{
-				groupedThreads.Older.push(thread);
+				groupedThreads.Older?.push(thread);
 			}
 		})
 	}

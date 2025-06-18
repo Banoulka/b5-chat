@@ -1,7 +1,7 @@
 import type { API_ThreadMessagesResponse } from '@b5-chat/common';
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
-import { FileIcon } from 'lucide-react';
-import { useMemo } from 'react';
+import { Currency, FileIcon } from 'lucide-react';
+import { useEffect, useMemo, useState} from 'react';
 
 import { getMessageOpts } from '@/hooks/queries';
 import { useScrollContainer } from '@/hooks/use-scroll-container';
@@ -13,6 +13,7 @@ import { api } from '../auth/AuthContext';
 import MarkdownDisplay from '../MarkdownDisplay';
 import { Skeleton } from '../ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
 
 type Props = {
 	bottomRefHeight: number;
@@ -64,6 +65,16 @@ const MessageList = ({ bottomRefHeight, threadId, stream, ref }: Props) => {
 
 	const shouldShowSkeleton = !isLoading && isFetching && isAtTopRef.current;
 
+	const [showScrollButton, setShowScrollButton] = useState(false);
+
+	const scrollToBottom = () => {
+		const current = scrollRef.current;
+
+		if (current) {
+			current.scrollTo({ top: current.scrollHeight, behavior: 'smooth'})
+		}
+	}
+
 	return (
 		<div
 			style={{ height: `calc(100vh - ${bottomRefHeight}px)` }}
@@ -87,6 +98,12 @@ const MessageList = ({ bottomRefHeight, threadId, stream, ref }: Props) => {
 						<MarkdownDisplay markdown={stream.tokens} />
 					</p>
 				</div>
+			)}
+
+			{showScrollButton && (
+				<button
+					onClick={scrollToBottom}
+				>Scroll to Bottom</button>
 			)}
 		</div>
 	);
