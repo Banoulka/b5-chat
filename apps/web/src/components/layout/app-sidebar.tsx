@@ -24,6 +24,9 @@ import {
 import { usePersistence } from '@/hooks/use-persistence';
 
 import { useAuth } from '../auth/AuthContext';
+import { threads } from '../../../../api/src/db/schema';
+
+import dayjs from 'dayjs'
 
 export function AppSidebar({ children }: { children: React.ReactNode }) {
 	const params = useParams({ from: '/threads/$threadId', shouldThrow: false });
@@ -51,6 +54,35 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 		}
 	}, []);
 
+	const today = dayjs().startOf('day')
+	const yesterday = dayjs().subtract(1, 'day')
+	const thirtyDaysAgo = dayjs().subtract(30, 'day')
+
+	const groupedThreads = {
+		today: [],
+		yesterday: [],
+		last30: [],
+		older: []
+	};
+
+	if (threads?.data){
+
+		threads?.data.forEach((thread) =>{
+			const threadDate = dayjs(thread.updatedAt);
+
+			if (threadDate.isSame(today, 'day')){
+				groupedThreads.today.push(thread);
+			} else if (threadDate.isSame(yesterday, 'day')){
+				groupedThreads.yesterday.push(thread)
+			} else if (threadDate.isAfter(thirtyDaysAgo)){
+				groupedThreads.last30.push(thread);
+			} else{
+				groupedThreads.older.push(thread);
+			}
+		})
+	}
+	
+
 	return (
 		<SidebarProvider defaultOpen={defaultOpen} defaultWidth={defaultWidth}>
 			<div className="bg-secondary pointer-events-auto fixed top-2 left-2 z-[9999] m-1 flex flex-row gap-0.5 rounded">
@@ -66,21 +98,36 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 						<Link to="/">New Chat</Link>
 					</SidebarGroup>
 					<SidebarGroup>
-						<SidebarGroupLabel>Threads</SidebarGroupLabel>
 						<SidebarGroupContent>
-							{threads?.data.map((thread) => (
-								<Link
-									className="my-2 block w-full text-sm"
-									to={'/threads/$threadId'}
-									params={{ threadId: thread.id }}
-									key={thread.id}
-								>
-									{params?.threadId === thread.id ? '> ' : ''}
-									{thread.name}
-								</Link>
-							))}
+				
+						{threads?.data &&
+						Object.entries(groupedThreads).map(([label, items]) => {
+							if (items.length === 0) return null;
+
+							return (
+								<div key={label}>
+								<SidebarGroupLabel>{label}</SidebarGroupLabel>
+								{items
+									.sort((a, b) => dayjs(b.updatedAt).unix() - dayjs(a.updatedAt).unix())
+									.map((thread) => (
+									<Link
+										key={thread.id}
+										to={`/threads/${thread.id}`}
+										className={`my-2 block w-full text-sm ${
+										params?.threadId === thread.id ? 'font-bold text-primary' : ''
+										}`}
+									>
+										{thread.name}
+									</Link>
+									))}
+								</div>
+							);
+							})}
+
 						</SidebarGroupContent>
-					</SidebarGroup>
+						</SidebarGroup>
+
+
 				</SidebarContent>
 
 				<SidebarFooter>
