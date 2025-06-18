@@ -57,6 +57,7 @@ export const POST = route(
 					localThreads.map((t) => ({
 						id: t.id,
 						name: t.name,
+						userId: session!.user.id,
 						updatedAt: new Date(t.updatedAt),
 						createdAt: new Date(t.createdAt),
 					})),

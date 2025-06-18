@@ -8,12 +8,13 @@ import { db } from '../service/db';
 
 export const GET = route(
 	'/threads',
-	async () => {
-		const allThreads = await db.query.threads.findMany({
+	async (req) => {
+		const userThreads = await db.query.threads.findMany({
+			where: (threads, { eq }) => eq(threads.userId, req.session!.user.id),
 			orderBy: [desc(threads.updatedAt)],
 		});
 		return ClientResponse.json({
-			data: allThreads.map((thread) => ({
+			data: userThreads.map((thread) => ({
 				id: thread.id,
 				name: thread.name,
 				createdAt: thread.createdAt.toISOString(),
@@ -22,7 +23,7 @@ export const GET = route(
 			meta: {
 				nextCursor: null,
 				prevCursor: null,
-				total: allThreads.length,
+				total: userThreads.length,
 			},
 		} satisfies API_ThreadsResponse);
 	},
@@ -31,12 +32,13 @@ export const GET = route(
 
 export const POST = route(
 	'/threads',
-	async () => {
+	async (req) => {
 		const thread = (
 			await db
 				.insert(threads)
 				.values({
 					name: '', // blank name to start with
+					userId: req.session!.user.id,
 				})
 				.returning()
 		)[0]!;

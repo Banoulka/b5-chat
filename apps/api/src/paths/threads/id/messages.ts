@@ -15,6 +15,14 @@ import { utApi } from '../../../service/uploadthing';
 export const GET = route(
 	'/threads/:threadId/messages',
 	async (req) => {
+		// First verify thread ownership
+		const thread = await db.query.threads.findFirst({
+			where: (threads, { eq, and }) =>
+				and(eq(threads.id, req.params.threadId), eq(threads.userId, req.session!.user.id)),
+		});
+
+		if (!thread) return ClientResponse.json({ error: 'Thread not found' }, { status: 404 });
+
 		const url = new URL(req.url);
 		const limit = 20;
 
@@ -85,9 +93,10 @@ export const POST = route(
 
 		if (!isSupportedModel(modelId)) throw new BadRequestError('Model not supported');
 
-		// TODO: thread ownerships
+		// Check thread ownership
 		const thread = await db.query.threads.findFirst({
-			where: (threads, { eq }) => eq(threads.id, req.params.threadId),
+			where: (threads, { eq, and }) =>
+				and(eq(threads.id, req.params.threadId), eq(threads.userId, session.user.id)),
 		});
 
 		if (!thread) return ClientResponse.json({ errors: { threadId: ['Thread not found'] } }, { status: 404 });

@@ -9,12 +9,16 @@ export const threads = pgTable(
 			.primaryKey()
 			.default(sql`gen_random_uuid()`),
 		name: text('name').notNull(),
+		userId: uuid('userId')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
 		createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
 		updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow(),
 	},
 	(table) => ({
 		createdAtIdx: index('threads_created_at_idx').on(table.createdAt),
 		nameIdx: index('threads_name_idx').on(table.name),
+		userIdIdx: index('threads_user_id_idx').on(table.userId),
 	}),
 );
 
@@ -88,7 +92,11 @@ export const attachmentRelations = relations(attachments, ({ one }) => ({
 	}),
 }));
 
-export const threadsRelations = relations(threads, ({ many }) => ({
+export const threadsRelations = relations(threads, ({ one, many }) => ({
+	user: one(users, {
+		fields: [threads.userId],
+		references: [users.id],
+	}),
 	messages: many(messages),
 	shareLinks: many(threadShareLinks),
 }));
