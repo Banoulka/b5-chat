@@ -21,14 +21,19 @@ import {
 	SidebarRail,
 	SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { getThreadOpts } from '@/hooks/queries';
+import { usePersistence } from '@/hooks/use-persistence';
 
 import { useAuth } from '../auth/AuthContext';
 
 export function AppSidebar({ children }: { children: React.ReactNode }) {
 	const params = useParams({ from: '/threads/$threadId', shouldThrow: false });
 
-	const { data: threads } = useQuery(getThreadOpts);
+	const persistence = usePersistence();
+
+	const { data: threads } = useQuery({
+		queryFn: persistence.listThreads,
+		queryKey: ['threads'],
+	});
 
 	// Load default state from localStorage
 	const [defaultOpen, setDefaultOpen] = useState(true);

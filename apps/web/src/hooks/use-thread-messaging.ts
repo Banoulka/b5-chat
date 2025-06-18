@@ -1,4 +1,4 @@
-import type { APIThread, APIThreadMessage } from '@b5-chat/common';
+import type { APIThreadMessage } from '@b5-chat/common';
 import type { CreateMessageSchema } from '@b5-chat/common/schemas';
 import { type InfiniteData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
@@ -9,6 +9,7 @@ import { api } from '@/components/auth/AuthContext';
 import type { LocalMessage, QueryTypeMessageData } from '@/components/threads/MessageList';
 
 import { getMessageOpts, getThreadOpts } from './queries';
+import { usePersistence } from './use-persistence';
 import { useStream } from './use-stream';
 
 export const useThreadMessaging = (initialThreadId?: string) => {
@@ -17,13 +18,16 @@ export const useThreadMessaging = (initialThreadId?: string) => {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 
+	const persistence = usePersistence();
+
 	const {
 		data: threads,
 		isLoading: threadLoading,
 		error: threadErr,
 	} = useQuery({
-		...getThreadOpts,
 		enabled: !!threadId,
+		queryFn: persistence.listThreads,
+		queryKey: ['threads'],
 	});
 
 	useEffect(() => {
@@ -34,10 +38,10 @@ export const useThreadMessaging = (initialThreadId?: string) => {
 	const thread = useMemo(() => threads?.data.find((t) => t.id === threadId), [threads, threadId]);
 
 	const createThread = useMutation<{ id: string }, unknown, void>({
-		mutationFn: () => api<APIThread>('/threads', { method: 'POST' }),
+		mutationFn: () => persistence.createNewThread(),
 		onSuccess: (data) => {
 			setThreadId(data.id);
-			queryClient.invalidateQueries(getThreadOpts);
+			queryClient.invalidateQueries({ queryKey: ['threads'] });
 		},
 	});
 

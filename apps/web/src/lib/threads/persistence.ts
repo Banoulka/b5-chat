@@ -4,7 +4,10 @@ import type { CreateMessageSchema } from '@b5-chat/common/schemas';
 import { api } from '@/components/auth/AuthContext';
 import { getThreadOpts } from '@/hooks/queries';
 
+type APIThreadMessageWithId = APIThreadMessage & { threadId: string };
+
 export interface ThreadPersistence {
+	getType: () => 'localStorage' | 'db';
 	listThreads(): Promise<API_ThreadsResponse>;
 	createMessage(threadId: string, message: CreateMessageSchema): Promise<void>;
 	listMessagesForThread(threadId: string, from: number | null): Promise<APIThreadMessage[]>;
@@ -14,17 +17,53 @@ export interface ThreadPersistence {
 const THREADS_KEY = 'lbd:threads';
 const MESSAGES_KEY = 'lbd:thread_messages';
 
+function jsonSafeParse<T>(key: string, data: string | null, defaultValue: T): T {
+	if (!data) return defaultValue;
+
+	try {
+		return JSON.parse(data);
+	} catch (error) {
+		console.warn(`Failed to parse JSON for key "${key}", deleting corrupted data:`, error);
+		localStorage.removeItem(key);
+		return defaultValue;
+	}
+}
+
+export const syncToServer = async (): Promise<void> => {
+	const threads = jsonSafeParse(THREADS_KEY, localStorage.getItem(THREADS_KEY), {}) as API_ThreadsResponse;
+	const messages = jsonSafeParse(MESSAGES_KEY, localStorage.getItem(MESSAGES_KEY), {}) as APIThreadMessageWithId[];
+
+	if (threads.data?.length === 0 && messages.length === 0) return;
+
+	await api('/threads/sync', {
+		body: JSON.stringify({
+			messages,
+			threads,
+		}),
+		method: 'POST',
+	});
+
+	// delete the local data
+	localStorage.removeItem(THREADS_KEY);
+	localStorage.removeItem(MESSAGES_KEY);
+};
+
 export const localStoragePersistence: ThreadPersistence = {
 	async createMessage(threadId: string, message: CreateMessageSchema): Promise<void> {
 		const messagesKey = `${MESSAGES_KEY}_${threadId}`;
-		const existingMessages: APIThreadMessage[] = JSON.parse(localStorage.getItem(messagesKey) || '[]');
+		const existingMessages: APIThreadMessageWithId[] = jsonSafeParse(
+			messagesKey,
+			localStorage.getItem(messagesKey),
+			[],
+		);
 
-		const newMessage: APIThreadMessage = {
+		const newMessage: APIThreadMessageWithId = {
 			attachments: [],
 			content: message.content,
 			createdAt: new Date().toISOString(),
 			id: crypto.randomUUID(),
 			model: null,
+			threadId,
 			type: 'user',
 			updatedAt: new Date().toISOString(),
 		};
@@ -58,9 +97,11 @@ export const localStoragePersistence: ThreadPersistence = {
 		return newThread;
 	},
 
+	getType: () => 'localStorage',
+
 	async listMessagesForThread(threadId: string, from: number | null): Promise<APIThreadMessage[]> {
 		const messagesKey = `${MESSAGES_KEY}_${threadId}`;
-		const messages: APIThreadMessage[] = JSON.parse(localStorage.getItem(messagesKey) || '[]');
+		const messages: APIThreadMessageWithId[] = jsonSafeParse(messagesKey, localStorage.getItem(messagesKey), []);
 
 		if (from === null) {
 			return messages;
@@ -71,7 +112,9 @@ export const localStoragePersistence: ThreadPersistence = {
 
 	async listThreads(): Promise<API_ThreadsResponse> {
 		const data = localStorage.getItem(THREADS_KEY);
-		return data ? JSON.parse(data) : { data: [], meta: { nextCursor: null, prevCursor: null, total: 0 } };
+		return data
+			? jsonSafeParse(THREADS_KEY, data, { data: [], meta: { nextCursor: null, prevCursor: null, total: 0 } })
+			: { data: [], meta: { nextCursor: null, prevCursor: null, total: 0 } };
 	},
 };
 
@@ -91,6 +134,8 @@ export const dbPersistence: ThreadPersistence = {
 
 		return response.thread;
 	},
+
+	getType: () => 'db',
 
 	async listMessagesForThread(threadId: string, from: number | null): Promise<APIThreadMessage[]> {
 		const url = from !== null ? `/threads/${threadId}/messages?from=${from}` : `/threads/${threadId}/messages`;

@@ -134,8 +134,7 @@ export const POST = route(
 		});
 
 		// if the thread does not have a name, set another job to get it from the LLM
-		console.log('thread', thread, thread.name.trim() === '');
-		if (thread.name.trim() === '') {
+		if (!thread.name || thread.name.trim() === '') {
 			generateThreadName(req.params.threadId, message.content);
 		}
 
